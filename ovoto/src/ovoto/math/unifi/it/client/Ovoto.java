@@ -1,6 +1,8 @@
 package ovoto.math.unifi.it.client;
 
 import ovoto.math.unifi.it.shared.FieldVerifier;
+import ovoto.math.unifi.it.shared.Utente;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -119,7 +121,12 @@ public class Ovoto implements EntryPoint {
 				sendButton.setEnabled(false);
 				textToServerLabel.setText(textToServer);
 				serverResponseLabel.setText("");
-				greetingService.greetServer(textToServer,
+				
+				Utente u = new Utente();
+				u.setNome("MArco");
+				u.setCognome("Maggesi");
+				
+				greetingService.greetServer(u,
 						new AsyncCallback<String>() {
 							public void onFailure(Throwable caught) {
 								// Show the RPC error message to the user

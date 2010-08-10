@@ -2,7 +2,11 @@ package ovoto.math.unifi.it.server;
 
 import ovoto.math.unifi.it.client.GreetingService;
 import ovoto.math.unifi.it.shared.FieldVerifier;
+import ovoto.math.unifi.it.shared.Utente;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.ObjectifyService;
 
 /**
  * The server side implementation of the RPC service.
@@ -11,8 +15,19 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 public class GreetingServiceImpl extends RemoteServiceServlet implements
 		GreetingService {
 
-	public String greetServer(String input) throws IllegalArgumentException {
+	public String greetServer(Utente utente) throws IllegalArgumentException {
 		// Verify that the input is valid. 
+		
+		System.err.println(utente);
+		
+		//Objectify ofy = ObjectifyService.begin();
+		//ofy.put(utente);
+
+		System.err.println(utente);
+		
+		
+		String input = utente.getNome() + " " + utente.getCognome();
+		
 		if (!FieldVerifier.isValidName(input)) {
 			// If the input is not valid, throw an IllegalArgumentException back to
 			// the client.
