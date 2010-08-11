@@ -25,6 +25,16 @@ public class Utente implements IsSerializable {
 	private Date data_modifica;
 	private Status status;
 
+	public Utente() {};
+	
+
+	public void setId(String id) {
+		this.id = id;
+		
+		
+	}
+	
+	
 	public void setIdentity(String identity) {
 		this.identity = identity;
 	}
