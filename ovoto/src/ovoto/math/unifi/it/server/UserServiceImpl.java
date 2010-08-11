@@ -2,9 +2,7 @@ package ovoto.math.unifi.it.server;
 
 import java.util.UUID;
 
-import ovoto.math.unifi.it.client.GreetingService;
 import ovoto.math.unifi.it.client.UserService;
-import ovoto.math.unifi.it.shared.FieldVerifier;
 import ovoto.math.unifi.it.shared.Utente;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
