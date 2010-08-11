@@ -62,7 +62,21 @@ public class Ovoto implements EntryPoint {
 				
 		RootPanel.get().add(createUser);
 		
+			
+		Anchor listaUtenti = new Anchor("Lista utenti");
 		
+		listaUtenti.addClickHandler(new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				ListaUtenti a = new ListaUtenti();
+				a.show();
+				a.center();
+			}
+		});
+				
+		RootPanel.get().add(listaUtenti);
+	
 		
 		// We can add style names to widgets
 		sendButton.addStyleName("sendButton");
