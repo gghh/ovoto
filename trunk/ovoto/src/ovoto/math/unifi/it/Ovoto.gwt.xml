@@ -6,11 +6,12 @@
   <!-- Inherit the default GWT style sheet.  You can change       -->
   <!-- the theme of your GWT application by uncommenting          -->
   <!-- any one of the following lines.                            -->
-  <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <!-- <inherits name='com.google.gwt.user.theme.standard.Standard'/> -->
   <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
-  <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
+  <inherits name='com.google.gwt.user.theme.dark.Dark'/>
 
   <!-- Other module inherits                                      -->
+   <inherits name="com.googlecode.objectify.Objectify" />
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='ovoto.math.unifi.it.client.Ovoto'/>

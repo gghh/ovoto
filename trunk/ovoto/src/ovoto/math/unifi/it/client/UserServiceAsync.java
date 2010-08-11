@@ -1,8 +1,11 @@
 package ovoto.math.unifi.it.client;
 
+import java.util.ArrayList;
+
 import ovoto.math.unifi.it.shared.Utente;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.googlecode.objectify.Key;
 
 /**
  * The async counterpart of <code>UserService</code>.
@@ -10,4 +13,5 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface UserServiceAsync {
 	void writeUser(Utente input, AsyncCallback<String> callback)
 			throws IllegalArgumentException;
+	void listUtenti(AsyncCallback<ArrayList<Key<Utente>>> callback);
 }
