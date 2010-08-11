@@ -15,7 +15,19 @@
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/ovoto/greet</url-pattern>
   </servlet-mapping>
+ 
+   <!-- Servlets -->
+  <servlet>
+    <servlet-name>utenteServlet</servlet-name>
+    <servlet-class>ovoto.math.unifi.it.server.UserServiceImpl</servlet-class>
+  </servlet>
   
+  <servlet-mapping>
+    <servlet-name>utenteServlet</servlet-name>
+    <url-pattern>/ovoto/utente</url-pattern>
+  </servlet-mapping>
+ 
+ 
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>Ovoto.html</welcome-file>

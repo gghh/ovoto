@@ -29,9 +29,7 @@ public class Utente implements IsSerializable {
 	
 
 	public void setId(String id) {
-		this.id = id;
-		
-		
+		this.id = id;	
 	}
 	
 	
@@ -129,6 +127,10 @@ public class Utente implements IsSerializable {
 
 	public Status getStatus() {
 		return status;
+	}
+
+	public String getId() {
+		return id;
 	}
 }
 
