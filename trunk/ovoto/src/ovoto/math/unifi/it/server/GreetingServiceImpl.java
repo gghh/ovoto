@@ -1,5 +1,7 @@
 package ovoto.math.unifi.it.server;
 
+import java.util.UUID;
+
 import ovoto.math.unifi.it.client.GreetingService;
 import ovoto.math.unifi.it.shared.FieldVerifier;
 import ovoto.math.unifi.it.shared.Utente;
@@ -18,10 +20,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 	public String greetServer(Utente utente) throws IllegalArgumentException {
 		// Verify that the input is valid. 
 		
-		System.err.println(utente);
+		//static ?
+		ObjectifyService.register(Utente.class);
 		
-		//Objectify ofy = ObjectifyService.begin();
-		//ofy.put(utente);
+		
+		utente.setId(UUID.randomUUID().toString());
+		
+		Objectify ofy = ObjectifyService.begin();
+		ofy.put(utente);
 
 		System.err.println(utente);
 		
