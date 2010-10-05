@@ -4,33 +4,93 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-  
-  <!-- Servlets -->
-  <servlet>
-    <servlet-name>greetServlet</servlet-name>
-    <servlet-class>ovoto.math.unifi.it.server.GreetingServiceImpl</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>greetServlet</servlet-name>
-    <url-pattern>/ovoto/greet</url-pattern>
-  </servlet-mapping>
- 
-   <!-- Servlets -->
-  <servlet>
-    <servlet-name>utenteServlet</servlet-name>
-    <servlet-class>ovoto.math.unifi.it.server.UserServiceImpl</servlet-class>
-  </servlet>
-  
-  <servlet-mapping>
-    <servlet-name>utenteServlet</servlet-name>
-    <url-pattern>/ovoto/utente</url-pattern>
-  </servlet-mapping>
- 
- 
-  <!-- Default page to serve -->
-  <welcome-file-list>
-    <welcome-file>Ovoto.html</welcome-file>
-  </welcome-file-list>
+
+	<!-- Servlets -->
+	<!--  <servlet>-->
+	<!--    <servlet-name>greetServlet</servlet-name>-->
+	<!--
+		<servlet-class>ovoto.math.unifi.it.server.GreetingServiceImpl</servlet-class>
+	-->
+	<!--  </servlet>-->
+	<!--  -->
+	<!--  <servlet-mapping>-->
+	<!--    <servlet-name>greetServlet</servlet-name>-->
+	<!--    <url-pattern>/ovoto/greet</url-pattern>-->
+	<!--  </servlet-mapping>-->
+	<!-- -->
+
+
+	<!--  Fake Urna  -->
+	<servlet>
+		<servlet-name>urnaServlet</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.urna.FakeUrna</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>urnaServlet</servlet-name>
+		<url-pattern>/ovoto/fakeUrna/*</url-pattern>
+	</servlet-mapping>
+
+
+
+
+
+	<!--  Voting  -->
+	<servlet>
+		<servlet-name>votingServlet</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.voter.VotingServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>votingServlet</servlet-name>
+		<url-pattern>/ovoto/voting</url-pattern>
+	</servlet-mapping>
+
+
+
+	<!-- admin -->
+	<filter>
+		<filter-name>EnsureAuth</filter-name>
+		<filter-class>ovoto.math.unifi.it.server.admin.EnsureAuthentication</filter-class>
+		<description>
+			The EnsureAuthenticated Filter
+        </description>
+	</filter>
+	<filter-mapping>
+		<filter-name>EnsureAuth</filter-name>
+		<url-pattern>/ovoto/admin/*</url-pattern>
+	</filter-mapping>
+
+
+	<servlet>
+		<servlet-name>usersAdminServlet</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.admin.UserServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>usersAdminServlet</servlet-name>
+		<url-pattern>/ovoto/admin/users</url-pattern>
+	</servlet-mapping>
+
+
+
+	<!--  Authentication  -->
+
+	<servlet>
+		<servlet-name>authenticationServlet</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.admin.EnsureAuthentication</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>authenticationServlet</servlet-name>
+		<url-pattern>/ovoto/authenticate</url-pattern>
+	</servlet-mapping>
+
+
+
+
+
+
+
+	<!-- Default page to serve -->
+	<welcome-file-list>
+		<welcome-file>Ovoto.html</welcome-file>
+	</welcome-file-list>
 
 </web-app>

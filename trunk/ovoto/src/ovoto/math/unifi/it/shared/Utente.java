@@ -24,6 +24,7 @@ public class Utente implements IsSerializable {
 	private Date data_ultimo_accesso;
 	private Date data_modifica;
 	private Status status;
+	private String hashed_code; //la password ma non la chiamiamo password
 
 	public Utente() {};
 	
@@ -131,6 +132,15 @@ public class Utente implements IsSerializable {
 
 	public String getId() {
 		return id;
+	}
+
+
+	public void setCode(String hashed_code) {
+		this.hashed_code = hashed_code;
+	}
+
+	public String getCode() {
+		return hashed_code;
 	}
 }
 
