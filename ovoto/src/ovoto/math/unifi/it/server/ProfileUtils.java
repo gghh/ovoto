@@ -1,7 +1,9 @@
 package ovoto.math.unifi.it.server;
 
 import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -12,12 +14,15 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang.RandomStringUtils;
+
 import ovoto.math.unifi.it.client.voter.InvalidCredentialsException;
 import ovoto.math.unifi.it.shared.Utente;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.Query;
 
 public class ProfileUtils {
 
@@ -30,7 +35,7 @@ public class ProfileUtils {
 
 
 	//resend method can work just id the following is invertible
-	private static String codeExternal2Internal(String code) throws NoSuchAlgorithmException {
+	public static String codeExternal2Internal(String code) /*throws NoSuchAlgorithmException*/ {
 		//		MessageDigest  digest = java.security.MessageDigest.getInstance("MD5");
 		//
 		//		digest.update(code.getBytes());
@@ -76,7 +81,7 @@ public class ProfileUtils {
 		if(u == null) 
 			throw new InvalidCredentialsException("Invalid user");
 
-		try {
+		//try {
 			String pw = codeExternal2Internal(code);
 
 			//System.err.println(pw);
@@ -87,9 +92,9 @@ public class ProfileUtils {
 
 			return u;
 
-		} catch (NoSuchAlgorithmException e) {
-			throw new InvalidCredentialsException("Internal Error");
-		}
+		//} catch (NoSuchAlgorithmException e) {
+		//	throw new InvalidCredentialsException("Internal Error");
+		//}
 	}
 
 
@@ -100,9 +105,8 @@ public class ProfileUtils {
 
 
 		//rigenera la pw
-		String new_code = UUID.randomUUID().toString();
-
-		try {
+		String new_code = getFreshCode();
+		//try {
 			String pw = codeExternal2Internal(new_code);
 			su.setCode(pw);
 			//e la spedice all'email
@@ -117,10 +121,10 @@ public class ProfileUtils {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		//} catch (NoSuchAlgorithmException e1) {
+		//	// TODO Auto-generated catch block
+		//	e1.printStackTrace();
+		//}
 
 	}
 
@@ -150,6 +154,38 @@ public class ProfileUtils {
 
 	}
 
+
+	public static String getFreshCode() {
+		return  RandomStringUtils.randomAlphabetic(16);
+	}
+
+	public static String getFreshId() {
+		return UUID.randomUUID().toString();
+	}
+
+
+	public static ArrayList<Utente> listProfiles() {
+
+		// You can query for just keys, which will return Key objects much more efficiently than fetching whole objects
+		Objectify ofy = ObjectifyService.begin();
+
+		Query<Utente> all = ofy.query(Utente.class);
+
+		ArrayList<Utente> lu = new ArrayList<Utente>();
+		
+		for( Utente u : all) 
+			lu.add(u);
+		
+		Collections.sort(lu, new Comparator<Utente>() {
+			@Override
+			public int compare(Utente o1, Utente o2) {
+				String n1 = o1.getCognome()+o1.getNome();
+				String n2 = o2.getCognome()+o2.getNome();
+				return (String.CASE_INSENSITIVE_ORDER.compare(n1, n2)); 
+			}
+		});
+		return lu;
+	}
 
 
 

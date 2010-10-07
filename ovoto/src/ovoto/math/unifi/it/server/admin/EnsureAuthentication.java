@@ -67,7 +67,7 @@ public class EnsureAuthentication extends RemoteServiceServlet implements Filter
 			if(us.isUserAdmin())
 				return u;
 			else
-				throw new NotAuthorizedException(u.getEmail() +" is not authorized for this service");
+				throw new NotAuthorizedException(u.getEmail() +" is not authorized for this service (i.e. it is not an administrator)", us.createLogoutURL(myUrl));
 		}
 	}
 	

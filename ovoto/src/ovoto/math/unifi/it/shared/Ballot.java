@@ -1,92 +1,137 @@
 package ovoto.math.unifi.it.shared;
 
-import java.util.Date;
+import java.util.ArrayList;
 
 import javax.persistence.Id;
 
+import com.google.appengine.api.datastore.Link;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class Ballot implements IsSerializable{
 
+	public enum Status {
+		FINALIZED, //actually read only, tokens assigned to users
+		READY, //ready to be initialized, BALLOT created into the service, descriptive fields are writable
+		TO_BE_CONTINUED //not yet created on remote services.
+	}
+	
+	
 	@Id Long ballotId;
+		
+	
 	private String ballotText;
-	private String ballotUrl; //descriptive page
-	private String votingUrl;//where to vote !!
-	private String generatorUrl;//service used to generate tokens
+	private Link ballotUrl;  //descriptive page
+	private Link serviceUrl; //the external voting service
 	
-	private Date date_creation;
-	private Date date_activation;
+	private Status status = Status.TO_BE_CONTINUED;
 	
 	
-	public Ballot() {}
+	private String serviceAccessToken = ""; //has to be sent to the service to create the ballot (a password)
+	private String serviceAccessId = ""; //has to be sent to the service to generate tokens it is sent by the service upon creation
+	
+	
+	
+	//private HashMap<String,String> emailsToUsers;
+	//private HashMap<Date,String> events;
 
+	//voters, per id
+	private ArrayList<String> voters = new ArrayList<String>();
+	
+	
+	private ArrayList<String> labels = new ArrayList<String>(); //le possibili scelte da votare
+	private int numOfChoices =0; //how many choices per voter
+	
+	
+	
+	
+	
+	protected Ballot() {}
 
+	public Ballot(String ballotText, Link ballotUrl, Link serviceUrl, String accessToken) {
+		this.ballotText = ballotText;
+		this.setBallotUrl(ballotUrl);
+		this.setServiceUrl(serviceUrl);
+		this.setServiceAccessToken(accessToken);
+	}
+	
+	
+	public Long getBallotId() {
+		return ballotId;
+	}
+
+	
 	public String getBallotText() {
 		return ballotText;
 	}
-
 
 	public void setBallotText(String ballotText) {
 		this.ballotText = ballotText;
 	}
 
-
-	public String getBallotUrl() {
-		return ballotUrl;
+	
+	public Status getStatus() {
+		return status;
 	}
 
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
-	public void setBallotUrl(String ballotUrl) {
+	public void setBallotUrl(Link ballotUrl) {
 		this.ballotUrl = ballotUrl;
 	}
 
-
-	public String getVotingUrl() {
-		return votingUrl;
+	public Link getBallotUrl() {
+		return ballotUrl;
 	}
 
-
-	public void setVotingUrl(String votingUrl) {
-		this.votingUrl = votingUrl;
+	public void setServiceUrl(Link serviceUrl) {
+		this.serviceUrl = serviceUrl;
 	}
 
-
-	public String getGeneratorUrl() {
-		return generatorUrl;
+	public Link getServiceUrl() {
+		return serviceUrl;
 	}
 
-
-	public void setGeneratorUrl(String generatorUrl) {
-		this.generatorUrl = generatorUrl;
+	public void setServiceAccessToken(String serviceAccessToken) {
+		this.serviceAccessToken = serviceAccessToken;
 	}
 
-
-	public Date getDate_creation() {
-		return date_creation;
+	public String getServiceAccessToken() {
+		return serviceAccessToken;
 	}
 
-
-	public void setDate_creation(Date dateCreation) {
-		date_creation = dateCreation;
+	public void setServiceAccessId(String serviceAccessId) {
+		this.serviceAccessId = serviceAccessId;
 	}
 
-
-	public Date getDate_activation() {
-		return date_activation;
+	public String getServiceAccessId() {
+		return serviceAccessId;
 	}
 
-
-	public void setDate_activation(Date dateActivation) {
-		date_activation = dateActivation;
+	public void setVoters(ArrayList<String> voters) {
+		this.voters = voters;
 	}
 
-
-	public Long getBallotId() {
-		
-		return ballotId;
+	public ArrayList<String> getVoters() {
+		return voters;
 	}
+
 	
-	
-	
+	public ArrayList<String> getLabels() {
+		return labels;
+	}
+	public void setLabels(ArrayList<String> labels) {
+		this.labels = labels;
+	}
+
+	public void setNumOfChoices(int numOfChoices) {
+		this.numOfChoices = numOfChoices;
+	}
+
+	public int getNumOfChoices() {
+		return numOfChoices;
+	}
+
 
 }

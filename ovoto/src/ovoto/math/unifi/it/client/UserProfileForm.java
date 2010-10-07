@@ -212,11 +212,11 @@ public class UserProfileForm extends SimplePanel {
 				Ballot b =  e.getKey();
 				VotingToken vt = e.getValue();
 
-				this.setWidget(row, 0,new Anchor(b.getBallotText(), b.getBallotUrl(),"_blank"));
+				//this.setWidget(row, 0,new Anchor(b.getBallotText(), b.getBallotUrl(),"_blank"));
 
-				String dest = b.getVotingUrl() + "/vote?ballotId="+b.getBallotId() + "&token=" + vt.getTokenText();
+				//String dest = b.getVotingUrl() + "/vote?ballotId="+b.getBallotId() + "&token=" + vt.getTokenText();
 
-				this.setWidget(row++, 1, new Anchor("VoteNow", dest, "_blank"));
+				//this.setWidget(row++, 1, new Anchor("VoteNow", dest, "_blank"));
 			}
 
 		}

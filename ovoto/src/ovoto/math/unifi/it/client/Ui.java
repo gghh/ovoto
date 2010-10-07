@@ -74,7 +74,7 @@ public class Ui extends Composite {
 		messages.setHTML(h);
 		
 		if(blocking) {
-			block.setWidget(new Label("Saving..."));
+			block.setWidget(new Label("Waiting..."));
 			block.center();
 			block.show();
 		} 

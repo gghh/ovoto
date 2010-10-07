@@ -1,5 +1,6 @@
 package ovoto.math.unifi.it.client.admin;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import ovoto.math.unifi.it.client.Ovoto;
@@ -20,14 +21,15 @@ import com.googlecode.objectify.Key;
 
 public class BallotControl {
 
-	private final UserServiceAsync userService = GWT.create(UserService.class);
+	//private final UserServiceAsync userService = GWT.create(UserService.class);
+	private final BallotServiceAsync ballotService =	GWT.create(BallotService.class);
 
 	public void store(Ballot b) {
 
 		Ovoto.getUi().setMessage("Saving entry....",true);
 
 
-		userService.writeBallot(b, new AsyncCallback<Long>() {
+		ballotService.writeBallot(b, new AsyncCallback<Long>() {
 
 			@Override
 			public void onSuccess(Long result) {
@@ -48,7 +50,7 @@ public class BallotControl {
 
 	private void loadSavedBallot(Long id) {
 		Key<Ballot> key = new Key<Ballot>(Ballot.class, id);
-		userService.getBallot(key, new AsyncCallback<Ballot>() {
+		ballotService.getBallot(key, new AsyncCallback<Ballot>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("error: " + caught.getMessage());
@@ -87,7 +89,8 @@ public class BallotControl {
 		dialog.center();
 		dialog.show();
 		//ask to the token generator url the codes (as many as the number of users)
-		makeTokensRequest(ballot,"http://127.0.0.1:8888/ovoto/fakeUrna?num=4&ballotId=" + ballot.getBallotId());
+		String url = "OOO";//ballot.getGeneratorUrl();
+		makeTokensRequest(ballot,url+"?num=4&ballotId=" + ballot.getBallotId());
 		Ovoto.getUi().setMessage("Requesting Tokens");
 		//mix the tokens
 		//push back to the server 
@@ -143,7 +146,7 @@ public class BallotControl {
 				Vector<String>scrambled = mixUp(orig);
 
 				//System.err.println(scrambled);
-				userService.storeTokens(ballot,scrambled, new AsyncCallback<Ballot>() {
+				ballotService.storeTokens(ballot,scrambled, new AsyncCallback<Ballot>() {
 					
 					@Override
 					public void onSuccess(Ballot result) {
@@ -182,6 +185,36 @@ public class BallotControl {
 		}
 
 		return out;
+	}
+
+
+	public void setup(Ballot ballot) {
+		
+		ArrayList<String> labels = new ArrayList<String>();
+		labels.add("Ciro de Cirris");
+		labels.add("Amedeo Minghi");
+		labels.add("Lalella Lupis");
+			
+		
+		ballot.setLabels(labels);
+		
+		
+		//System.err.println(scrambled);
+		ballotService.setupService(ballot, new AsyncCallback<Ballot>() {
+			
+			@Override
+			public void onSuccess(Ballot result) {
+				//dialog.hide();
+				BallotForm a = new BallotForm(result,BallotControl.this);
+				Ovoto.getUi().setContent(a);
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Errror during ballot setup: " + caught.getMessage());
+				Ovoto.getUi().setErrorMessage(caught.getMessage());
+			}
+		});
 	}
 
 
