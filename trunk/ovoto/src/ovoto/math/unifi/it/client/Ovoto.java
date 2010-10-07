@@ -5,13 +5,13 @@ import ovoto.math.unifi.it.client.admin.BallotControl;
 import ovoto.math.unifi.it.client.admin.BallotForm;
 import ovoto.math.unifi.it.client.admin.ListaUtenti;
 import ovoto.math.unifi.it.client.admin.ListaVotazioni;
+import ovoto.math.unifi.it.client.admin.LoadProfileRowProvider;
 import ovoto.math.unifi.it.client.voter.VoterUserProfileControl;
 import ovoto.math.unifi.it.client.voter.VotingService;
 import ovoto.math.unifi.it.client.voter.VotingServiceAsync;
 import ovoto.math.unifi.it.shared.VotingData;
 
 import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -19,7 +19,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -85,7 +88,14 @@ public class Ovoto implements EntryPoint {
 			public void onFailure(Throwable caught) {
 				if(caught instanceof NotAuthenticatedException) 
 					Window.Location.replace(((NotAuthenticatedException)caught).getAuthUrl());
-				else
+				else if(caught instanceof NotAuthorizedException) {
+					NotAuthorizedException e = (NotAuthorizedException)caught;
+					VerticalPanel vp = new VerticalPanel();
+					vp.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+					vp.add(new Label(e.getMessage()));
+					vp.add(new Anchor("reLogin",e.getLogoutUrl()));
+					ui.setContent(vp);
+				} else
 					Window.alert(caught.getMessage());
 			}
 		});
@@ -133,7 +143,7 @@ public class Ovoto implements EntryPoint {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				ListaUtenti a = new ListaUtenti(upc);
+				ListaUtenti a = new ListaUtenti(new LoadProfileRowProvider());
 				ui.setContent(a);
 				//				a.show();
 				//				a.center();
@@ -175,7 +185,7 @@ public class Ovoto implements EntryPoint {
 		
 		
 
-		Anchor logout = new Anchor("Logout");
+		Anchor logout = new Anchor("Logout (dev)");
 
 		logout.addClickHandler(new ClickHandler() {
 

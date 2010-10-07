@@ -71,6 +71,17 @@
 
 
 
+	<servlet>
+		<servlet-name>ballotsAdminServlet</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.admin.BallotServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ballotsAdminServlet</servlet-name>
+		<url-pattern>/ovoto/admin/ballots</url-pattern>
+	</servlet-mapping>
+
+
+
 	<!--  Authentication  -->
 
 	<servlet>

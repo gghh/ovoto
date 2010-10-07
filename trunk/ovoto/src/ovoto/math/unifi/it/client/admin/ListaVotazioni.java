@@ -17,7 +17,8 @@ import com.googlecode.objectify.Key;
 
 public class ListaVotazioni extends SimplePanel {
 
-	private final UserServiceAsync userService =	GWT.create(UserService.class);
+	//private final UserServiceAsync userService =	GWT.create(UserService.class);
+	private final BallotServiceAsync ballotService =	GWT.create(BallotService.class);
 
 	private VerticalPanel vp = new VerticalPanel();
 	private BallotControl bc;
@@ -27,7 +28,7 @@ public class ListaVotazioni extends SimplePanel {
 	public ListaVotazioni(BallotControl bc) {
 		this.bc = bc;
 
-		userService.listBallots(new AsyncCallback<ArrayList<Ballot>>() {
+		ballotService.listBallots(new AsyncCallback<ArrayList<Ballot>>() {
 
 			@Override
 			public void onSuccess(ArrayList<Ballot> result) {
@@ -68,7 +69,7 @@ public class ListaVotazioni extends SimplePanel {
 		@Override
 		public void onClick(ClickEvent event) {
 			Key<Ballot> k = new Key<Ballot>(Ballot.class, b.getBallotId());
-			userService.getBallot(k, this);
+			ballotService.getBallot(k, this);
 
 		}
 		@Override

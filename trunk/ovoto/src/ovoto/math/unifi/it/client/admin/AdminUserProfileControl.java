@@ -102,6 +102,14 @@ public class AdminUserProfileControl implements UserProfileControl {
 			}
 		});
 	}
+
+
+
+	@Override
+	public void load(String id, AsyncCallback<Utente> c) {
+		Key<Utente> k = new Key<Utente>(Utente.class, id);
+		userService.getUtente(k, c);	
+	}
 	
 
 }

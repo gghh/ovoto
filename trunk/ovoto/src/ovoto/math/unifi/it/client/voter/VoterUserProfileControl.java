@@ -105,6 +105,11 @@ public class VoterUserProfileControl implements UserProfileControl {
 			}
 		});
 	}
+
+	@Override
+	public void load(String id, AsyncCallback<Utente> c) {
+		Window.alert("NON CI PENSARE NEMMENO !!!");
+	}
 	
 
 }

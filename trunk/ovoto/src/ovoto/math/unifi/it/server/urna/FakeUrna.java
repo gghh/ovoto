@@ -2,6 +2,7 @@ package ovoto.math.unifi.it.server.urna;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.Vector;
 
@@ -29,6 +30,34 @@ public class FakeUrna extends HttpServlet {
 	public void init() throws ServletException {
 		super.init();
 		ObjectifyService.register(UrnaToken.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void doPost(HttpServletRequest req, HttpServletResponse resp)	throws IOException {
+
+
+//		String response="";
+//		BufferedReader reader =	new BufferedReader(new InputStreamReader(req.getInputStream()));
+//		String line;
+//		while ((line = reader.readLine()) != null) {
+//			response += line;
+//		}
+//		reader.close();
+//		System.err.println(response);
+//		
+		
+		for (Enumeration<String>e = req.getParameterNames(); e.hasMoreElements();) {
+			String pname = e.nextElement();
+			String pvalue = req.getParameter(pname);
+			System.err.println(pname + " = " + pvalue);
+		}
+		
+		//The ballot reference number
+		String bid=UUID.randomUUID().toString();
+		resp.getWriter().print(bid);
+		resp.setStatus(HttpServletResponse.SC_OK);
+		
 	}
 
 
@@ -130,12 +159,12 @@ public class FakeUrna extends HttpServlet {
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"Token already used ....");
 		}
 
-		
+
 		String v1 = req.getParameter("v1");
 		String v2 = req.getParameter("v2");
-		
+
 		theToken.setUsed();
-		
+
 		if(v1 == null) 
 			if(v2==null) 
 				theToken.setVote("");
@@ -148,7 +177,7 @@ public class FakeUrna extends HttpServlet {
 				theToken.setVote(v1 + "," + v2);
 
 		store(theToken);	
-		
+
 		resp.getWriter().println("Voto registrato correttmanete: " + theToken.getVote());
 		return;
 
@@ -157,7 +186,7 @@ public class FakeUrna extends HttpServlet {
 
 	private void store(UrnaToken theToken) {
 		Objectify ofy = ObjectifyService.begin();
-			ofy.put(theToken);
+		ofy.put(theToken);
 	}
 
 
@@ -188,7 +217,11 @@ public class FakeUrna extends HttpServlet {
 		String token = req.getParameter("token");	
 		String ballotId = req.getParameter("ballotId");
 
-		String storeDest = "http://127.0.0.1:8888/ovoto/fakeUrna/registerVote" + "?" + req.getQueryString();
+		StringBuffer me = req.getRequestURL();
+		//che schifezza
+		me.delete(me.lastIndexOf("/vote"),me.length());
+
+		String storeDest = me + "/registerVote" + "?" + req.getQueryString();
 
 		PrintWriter p = resp.getWriter();
 
@@ -198,11 +231,11 @@ public class FakeUrna extends HttpServlet {
 		p.println("<form method=\"GET\" action=\""+ storeDest +"\">");
 		p.println("<input type=\"checkbox\" name=\"v1\" value=\"one\"/>One<br/>");
 		p.println("<input type=\"checkbox\" name=\"v2\" value=\"two\"/>Two</br>");
-		
+
 		p.println("<input type=\"text\" name=\"ballotId\" value=\""+ballotId+"\"/></br>");
 		p.println("<input type=\"text\" name=\"token\" value=\""+token+"\"/></br>");
 		p.println("<input type=\"submit\" name=\"submit\" value=\"submit\"/>");
-		
+
 		p.println("</form>");
 		p.println("</body>");
 		p.println("</html>");
