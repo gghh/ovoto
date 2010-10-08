@@ -1,6 +1,6 @@
 package ovoto.math.unifi.it.client.admin;
 
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.util.Vector;
 
 import ovoto.math.unifi.it.client.Ovoto;
@@ -9,14 +9,10 @@ import ovoto.math.unifi.it.shared.Ballot;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.jsonp.client.JsonpRequestBuilder;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
 import com.googlecode.objectify.Key;
 
 public class BallotControl {
@@ -64,34 +60,37 @@ public class BallotControl {
 	}
 
 
-	public void activate(final Ballot ballot) {
+	public void activate(final Ballot ballot) throws UnsupportedEncodingException {
 
-		final DialogBox dialog = new DialogBox(false, true);
-
-		dialog.setHTML("Activating Ballot");
-
-		VerticalPanel vp = new VerticalPanel();
-		Button close = new Button("Close");
-		close.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				//refresh
-				dialog.hide();
-				BallotForm a = new BallotForm(ballot,BallotControl.this);
-				Ovoto.getUi().setContent(a);
-			}
-		});
-		vp.add(close);
-
-		dialog.add(vp);
-		// open a popup (modal)
-		dialog.center();
-		dialog.show();
+		//		final DialogBox dialog = new DialogBox(false, true);
+		//
+		//		dialog.setHTML("Activating Ballot");
+		//
+		//		VerticalPanel vp = new VerticalPanel();
+		//		
+		//		Button close = new Button("Close");
+		//		close.addClickHandler(new ClickHandler() {
+		//
+		//			@Override
+		//			public void onClick(ClickEvent event) {
+		//				//refresh
+		//				dialog.hide();
+		//				BallotForm a = new BallotForm(ballot,BallotControl.this);
+		//				Ovoto.getUi().setContent(a);
+		//			}
+		//		});
+		//		vp.add(close);
+		//
+		//		dialog.add(vp);
+		//		// open a popup (modal)
+		//		dialog.center();
+		//		dialog.show();
 		//ask to the token generator url the codes (as many as the number of users)
-		String url = "OOO";//ballot.getGeneratorUrl();
-		makeTokensRequest(ballot,url+"?num=4&ballotId=" + ballot.getBallotId());
-		Ovoto.getUi().setMessage("Requesting Tokens");
+
+
+
+		makeTokensRequest(ballot);
+
 		//mix the tokens
 		//push back to the server 
 
@@ -117,19 +116,28 @@ public class BallotControl {
 
 	}
 
-	private void makeTokensRequest(final Ballot ballot, String n_url) {
+	private void makeTokensRequest(final Ballot ballot) throws UnsupportedEncodingException {
 
 		JsonpRequestBuilder jsonp = new JsonpRequestBuilder();
 
-		// String url = "http://www.google.com/calendar/feeds/developer-calendar@google.com/public/full?alt=json-in-script";
 
-		jsonp.requestObject(n_url,	new AsyncCallback<TokenList>() {
+		String url = ballot.getServiceUrl().getValue();
+		url += "?mode=ACTIVATE";
+		url += "&accessToken=" + URL.encode(ballot.getServiceAccessToken());
+		url += "&accessId=" + URL.encode(ballot.getServiceAccessId());
+		url += "&numTokens=" + ballot.getVoters().size();
+
+		Ovoto.getUi().setMessage("Requesting Tokens...",true);
+
+
+		jsonp.requestObject(url,	new AsyncCallback<TokenList>() {
 			public void onFailure(Throwable throwable) {
-				Window.alert("Errroorrrreeee " + throwable.getMessage());
+				Window.alert("Error " + throwable.getMessage());
+				Ovoto.getUi().setErrorMessage(throwable.getMessage());
 			}
 
 			public void onSuccess(TokenList tokens) {
-				Ovoto.getUi().setMessage("Reading Tokens");
+				Ovoto.getUi().setMessage("Reading Tokens...", true);
 
 				JsArray<TokenText> entries = tokens.getEntries();
 
@@ -140,28 +148,32 @@ public class BallotControl {
 					orig.add(tt.getToken());
 				}
 
-				//System.err.println(orig);
+				System.err.println("==================");
+				System.err.println(orig);
+				System.err.println("==================");
 
-				Ovoto.getUi().setMessage("mixingUp Tokens");
+				Ovoto.getUi().setMessage("mixingUp Tokens...",true);
 				Vector<String>scrambled = mixUp(orig);
 
-				//System.err.println(scrambled);
+				System.err.println(scrambled);
+				System.err.println("==================");
+
 				ballotService.storeTokens(ballot,scrambled, new AsyncCallback<Ballot>() {
-					
+
 					@Override
 					public void onSuccess(Ballot result) {
 						//dialog.hide();
-						BallotForm a = new BallotForm(ballot,BallotControl.this);
+						BallotForm a = new BallotForm(result,BallotControl.this);
 						Ovoto.getUi().setContent(a);
-
 					}
-					
+
 					@Override
 					public void onFailure(Throwable caught) {
-						Window.alert("Errror sotring tokens " + caught.getMessage());
+						Window.alert("Errror storing tokens " + caught.getMessage());
+						Ovoto.getUi().setErrorMessage(caught.getMessage());
 					}
 				});
-				
+
 
 			}
 
@@ -189,32 +201,46 @@ public class BallotControl {
 
 
 	public void setup(Ballot ballot) {
-		
-		ArrayList<String> labels = new ArrayList<String>();
-		labels.add("Ciro de Cirris");
-		labels.add("Amedeo Minghi");
-		labels.add("Lalella Lupis");
-			
-		
-		ballot.setLabels(labels);
-		
-		
+
+
 		//System.err.println(scrambled);
 		ballotService.setupService(ballot, new AsyncCallback<Ballot>() {
-			
+
 			@Override
 			public void onSuccess(Ballot result) {
 				//dialog.hide();
 				BallotForm a = new BallotForm(result,BallotControl.this);
 				Ovoto.getUi().setContent(a);
 			}
-			
+
 			@Override
 			public void onFailure(Throwable caught) {
 				Window.alert("Errror during ballot setup: " + caught.getMessage());
 				Ovoto.getUi().setErrorMessage(caught.getMessage());
 			}
 		});
+	}
+
+
+	public void sendEmails(Ballot ballot, String subj, String body) {
+		
+		ballotService.sendEmails(ballot,subj,body, new AsyncCallback<Ballot>() {
+
+			@Override
+			public void onSuccess(Ballot result) {
+				//dialog.hide();
+				BallotForm a = new BallotForm(result,BallotControl.this);
+				Ovoto.getUi().setContent(a);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Errror during mail delivery: " + caught.getMessage());
+				Ovoto.getUi().setErrorMessage(caught.getMessage());
+			}
+		});
+		
+		
 	}
 
 

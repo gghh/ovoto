@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -135,26 +136,18 @@ public class ProfileUtils {
 	}
 
 	private static void notifyCodeToUser(String url,Utente u, String code) throws UnsupportedEncodingException, MessagingException {
-		Properties props = new Properties();
-		Session session = Session.getDefaultInstance(props, null);
 
-
-		String msgBody = url + "?user=" + u.getId() + "&code=" + code;
-
-		Message msg = new MimeMessage(session);
-		msg.setFrom(new InternetAddress("ovoto.anagrafe@gmail.com", "O'voto Administrator"));
-		msg.addRecipient(Message.RecipientType.TO,
-				new InternetAddress(u.getEmail(), u.getTitolo() + " " + u.getNome() + " " + u.getCognome()));
-		msg.setSubject("Voting Account");
-		msg.setText(msgBody);
-		Transport.send(msg);
-
+		String msgBody = credentialsUrl(url,u,code);
+		String msgSubj = "Voting Account";
+		sendEmail(u,msgSubj,msgBody);
 
 		System.err.println(msgBody);
 
 	}
 
-
+	
+	
+	
 	public static String getFreshCode() {
 		return  RandomStringUtils.randomAlphabetic(16);
 	}
@@ -187,6 +180,54 @@ public class ProfileUtils {
 		return lu;
 	}
 
+
+	public static ArrayList<Utente> listProfiles(ArrayList<String> list) {
+
+		Objectify ofy = ObjectifyService.begin();
+
+		Map<String, Utente> all = ofy.get(Utente.class,list);
+
+		ArrayList<Utente> lu = new ArrayList<Utente>();
+
+		for( Utente u : all.values()) {
+			lu.add(u);
+		}
+		return lu;
+	}
+
+
+	
+	public static String credentialsUrl(String baseUrl,Utente u, String code) {
+		return  baseUrl + "?user=" + u.getId() + "&code=" + code;
+	}
+	
+	public static String credentialsUrl(String baseUrl, Utente u) {
+		return credentialsUrl(baseUrl, u, codeInternal2External(u.getCode()));
+	}
+
+
+	public static String getFullName(Utente u) {
+		return u.getNome() + " " + u.getCognome();
+	}
+
+	public static String getQualifiedName(Utente u) {
+		return u.getTitolo() + " " +getFullName(u);
+	}
+
+
+	public static void sendEmail(Utente u, String subj, String mailbody) throws UnsupportedEncodingException, MessagingException {
+		Properties props = new Properties();
+		Session session = Session.getDefaultInstance(props, null);
+		Message msg = new MimeMessage(session);
+		msg.setFrom(new InternetAddress("ovoto.anagrafe@gmail.com", "O'voto Administrator"));
+		msg.addRecipient(Message.RecipientType.TO, new InternetAddress(u.getEmail(), getQualifiedName(u)));
+		msg.setSubject(subj);
+		msg.setText(mailbody);
+		Transport.send(msg);
+		
+		//System.err.println("sent email :" + mailbody);
+		
+	}
 
 
 }

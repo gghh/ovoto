@@ -32,39 +32,125 @@ public class FakeUrna extends HttpServlet {
 		ObjectifyService.register(UrnaToken.class);
 	}
 
+
+
+	//POST: mode=SETUP: get accassToken,labels,numOfChoices,id & return accessId
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)	throws IOException {
 
 
-//		String response="";
-//		BufferedReader reader =	new BufferedReader(new InputStreamReader(req.getInputStream()));
-//		String line;
-//		while ((line = reader.readLine()) != null) {
-//			response += line;
-//		}
-//		reader.close();
-//		System.err.println(response);
-//		
-		
+		//		String response="";
+		//		BufferedReader reader =	new BufferedReader(new InputStreamReader(req.getInputStream()));
+		//		String line;
+		//		while ((line = reader.readLine()) != null) {
+		//			response += line;
+		//		}
+		//		reader.close();
+		//		System.err.println(response);
+		//		
+
 		for (Enumeration<String>e = req.getParameterNames(); e.hasMoreElements();) {
 			String pname = e.nextElement();
 			String pvalue = req.getParameter(pname);
 			System.err.println(pname + " = " + pvalue);
 		}
-		
+
 		//The ballot reference number
 		String bid=UUID.randomUUID().toString();
 		resp.getWriter().print(bid);
 		resp.setStatus(HttpServletResponse.SC_OK);
-		
+
 	}
 
 
+	//GET: mode=ACTIVATE: get accessToken,accessId,numTokens & return Tokens (in number of numTokens, as JsonArray)
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)	throws IOException {
 
 
+		String mode = req.getParameter("mode");
+		if(mode == null) {
+			resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"mancano parametri");
+			return;
+		}
+
+		if("ACTIVATE".equals(mode)) {
+
+			String accessToken = req.getParameter("accessToken");
+			if(accessToken == null) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"mancano parametri");
+				return;
+			}
+
+			//controlla access token
+			//TODO
+
+			String accessId = req.getParameter("accessId");
+			if(accessId == null) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"mancano parametri");
+				return;
+			}
+
+
+			String numTokens_s = req.getParameter("numTokens");
+			if(numTokens_s == null) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"mancano parametri");
+				return;
+			}
+
+			String callback = req.getParameter("callback");
+			if(callback == null) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"mancano parametri");
+				return;
+			}
+
+			
+			int numTokens;
+			try {
+				numTokens = Integer.parseInt(numTokens_s);
+			} catch (Exception e) {
+				resp.sendError(HttpServletResponse.SC_BAD_REQUEST,"parametri errati");
+				return;
+			}
+
+
+			
+			resp.setContentType("text/javascript; charset=UTF-8");
+			resp.setStatus(HttpServletResponse.SC_OK);
+			ServletOutputStream os = resp.getOutputStream();
+
+			//genera i token
+
+
+			Vector<String> tokens = new Vector<String>();
+
+			for(int i=0;i<numTokens;i++) {
+				tokens.add(generateToken());
+			}
+
+			// store the tokens
+			//storeTokens(tokens, ballotId);
+
+
+			String tokList =  jsonToken(tokens.get(0));
+			for(int i=1;i<numTokens;i++) {
+				tokList += "," + jsonToken(tokens.get(i));
+			}
+
+			String response=callback+"({\"version\":\"1.0\",\"encoding\":\"UTF-8\",\"tokenList\":[" + tokList + "]});";
+
+			System.err.println(response);
+
+
+			os.println(response);
+			os.flush();
+
+			resp.flushBuffer();
+
+			return;
+
+		}
 
 		String pi = req.getPathInfo();
 
