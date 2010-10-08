@@ -1,7 +1,6 @@
 package ovoto.math.unifi.it.server.admin;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import ovoto.math.unifi.it.client.admin.UserService;
 import ovoto.math.unifi.it.server.ProfileUtils;
@@ -60,17 +59,7 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
 	//only the specified users
 	@Override
 	public ArrayList<Utente> listUtenti(ArrayList<String> list) {
-
-		Objectify ofy = ObjectifyService.begin();
-
-		Map<String, Utente> all = ofy.get(Utente.class,list);
-
-		ArrayList<Utente> lu = new ArrayList<Utente>();
-
-		for( Utente u : all.values()) {
-			lu.add(u);
-		}
-		return lu;
+		return ProfileUtils.listProfiles(list);
 	}
 
 

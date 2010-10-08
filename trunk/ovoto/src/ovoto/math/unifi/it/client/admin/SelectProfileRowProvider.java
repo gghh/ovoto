@@ -26,8 +26,8 @@ public class SelectProfileRowProvider implements ProfileRowProvider {
 	ArrayList<SelectableUserRow> entries = new ArrayList<SelectableUserRow>();
 
 	ArrayList<String> already_selected_entries = new ArrayList<String>();
-	
-	
+
+
 	//inner class
 	class SelectableUserRow extends HorizontalPanel implements ClickHandler, AsyncCallback<Utente> {
 		private Utente u;
@@ -67,10 +67,14 @@ public class SelectProfileRowProvider implements ProfileRowProvider {
 			//			a.show();
 			//			a.center();
 		}
+
+		public void setSelected() {
+			c.setValue(true);
+		}
 	}
 
-	
-	
+
+
 
 	@Override
 	public Widget getUserRow(Utente u) {
@@ -93,6 +97,13 @@ public class SelectProfileRowProvider implements ProfileRowProvider {
 		}
 
 		return a;
+	}
+
+
+	public void selectAll() {
+		for(SelectableUserRow e : entries) {
+			e.setSelected();
+		}
 	}
 
 }

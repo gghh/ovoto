@@ -3,12 +3,16 @@ package ovoto.math.unifi.it.server.admin;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import org.antlr.stringtemplate.StringTemplate;
+
 import ovoto.math.unifi.it.client.admin.BallotService;
 import ovoto.math.unifi.it.client.admin.BallotServiceCommunicationErrorException;
+import ovoto.math.unifi.it.client.admin.MailSendingException;
 import ovoto.math.unifi.it.server.ProfileUtils;
 import ovoto.math.unifi.it.shared.Ballot;
 import ovoto.math.unifi.it.shared.Utente;
 import ovoto.math.unifi.it.shared.VotingToken;
+import ovoto.math.unifi.it.shared.Ballot.Status;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.googlecode.objectify.Key;
@@ -35,7 +39,7 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 	@Override
 	public Long writeBallot(Ballot b) {
 		return BallotUtils.writeBallot(b);
-		
+
 	}
 
 
@@ -66,16 +70,21 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 
 	@Override
 	public Ballot storeTokens(Ballot ballot, Vector<String> scrambled) {
-		ArrayList<Utente> l = ProfileUtils.listProfiles();
 
 		Objectify ofy = ObjectifyService.begin();
 
-		//c;e; da controllare che le iste siano della stessa lunghezza :O
+		assert(ballot.getVoters().size() == scrambled.size());
+
+		//ArrayList<Utente> voters = ProfileUtils.listProfiles(ballot.getVoters());
+
 		int i=0;
-		for(Utente u: l) {
-			VotingToken vt = new VotingToken(scrambled.get(i++), null, null, ballot.getBallotId(), u.getId());
+		for(String uId: ballot.getVoters()) {
+			VotingToken vt = new VotingToken(scrambled.get(i++), null, null, ballot.getBallotId(), uId);
 			ofy.put(vt);
 		}
+
+		ballot.setStatus(Status.FINALIZED);
+		BallotUtils.writeBallot(ballot);
 
 		return ballot;
 	}
@@ -88,10 +97,55 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 
 
 		b = BallotUtils.setupBallot(b);
-		
+
 
 		return b;
 
+	}
+
+
+	@Override
+	public Ballot sendEmails(Ballot ballot, String subj, String body) throws MailSendingException {
+
+		
+		//VA FATTA UNA TASKQUEUE !!!
+		
+		
+		ArrayList<Utente> lu = ProfileUtils.listProfiles(ballot.getVoters());
+
+		String baseUrl = "";
+
+		StringTemplate st = new StringTemplate(body);
+		
+		for(Utente u:lu) {
+
+			String cred = ProfileUtils.credentialsUrl(baseUrl, u);
+			String dirLink = cred + "&ballot="+ ballot.getBallotId();
+			String fullName = ProfileUtils.getFullName(u);
+			String qualifiedName = ProfileUtils.getQualifiedName(u);
+
+			st.setAttribute("credentials", cred );
+			st.setAttribute("directlink", dirLink );
+			st.setAttribute("fullname", fullName );
+			st.setAttribute("qualifiedname", qualifiedName );
+
+			String mailbody = st.toString();
+
+			st.reset();
+
+			//System.out.println("orig: " + body);
+			System.out.println("txt: " + mailbody);
+
+			try {
+				ProfileUtils.sendEmail(u,subj,mailbody);
+			} catch (Exception e) {
+				throw new MailSendingException(e.getMessage());
+			}
+		}
+		
+		//ballot.setEmail(data,subject,body);
+		
+		return ballot;
 	}
 
 

@@ -1,9 +1,12 @@
 package ovoto.math.unifi.it.client.admin;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import ovoto.math.unifi.it.client.Ovoto;
 import ovoto.math.unifi.it.shared.Ballot;
+import ovoto.math.unifi.it.shared.Ballot.Status;
 
 import com.google.appengine.api.datastore.Link;
 import com.google.gwt.dom.client.Style.Unit;
@@ -17,6 +20,7 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
@@ -34,6 +38,10 @@ public class BallotForm extends TabLayoutPanel {
 	private TextBox accessToken = new TextBox();
 	private TextBox accessId = new TextBox();
 
+	//Setup
+	private LabelsArea labelsArea = new LabelsArea();
+	private TextBox numOfChoices = new TextBox();
+
 
 
 
@@ -45,6 +53,16 @@ public class BallotForm extends TabLayoutPanel {
 	class GeneralInfo extends FlowPanel {
 
 		public GeneralInfo() {
+
+			//			if(ballot!= null) {
+			//				Window.alert(ballot.getStatus() + " & " + Status.READY);
+			//				if(ballot.getStatus() == Status.READY) {
+			//					accessToken.setReadOnly(true);
+			//					serviceUrl.setReadOnly(true);
+			//					this.add(new Label("Ballot setup done"));
+			//				} 
+			//			}
+
 
 			save = new Button("Save");
 			//save.setEnabled(false);
@@ -115,59 +133,111 @@ public class BallotForm extends TabLayoutPanel {
 
 
 
+	class LabelsArea extends TextArea {
+		public LabelsArea() {
+			setSize("200px", "300px");	
+		}
+
+		public void setData(ArrayList<String> a) {
+			String sum ="";
+			for(String s: a) 
+				sum+= s + "\n";
+			setText(sum);
+		}
+
+		public ArrayList<String> getData() {
+			String[] lines = getValue().split("\n");
+			return new ArrayList<String>(Arrays.asList(lines));
+		}
+
+	}
+
 
 	class Configs extends FlowPanel {
-		
+		Anchor setup = new Anchor("Setup");
+		Anchor saveLabels = new Anchor("Save Labels");
+
+		private void setDisabled() {
+			labelsArea.setReadOnly(true);
+			numOfChoices.setReadOnly(true);
+		}
+
 		public Configs() {
 
+			labelsArea.setData(ballot.getLabels());
+			numOfChoices.setText(""+ballot.getNumOfChoices());
+			numOfChoices.setWidth("20px");
 
-		
-			//so we can add the activate anchor
-			Anchor setup = new Anchor("Setup");
+			if(ballot.getStatus() != Status.TO_BE_CONTINUED) {
+				setDisabled();
+				this.add(new Label("Ballot setup done."));
+			} else {
+				this.add(setup);
+				setup.addClickHandler(new ClickHandler() {
 
-			setup.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						Ovoto.getUi().setMessage("Activating",true);
+						cntrl.setup(ballot);
+					}
+				});
 
-				@Override
-				public void onClick(ClickEvent event) {
-					Ovoto.getUi().setMessage("Activating",true);
-					cntrl.setup(ballot);
-				}
-			});
+				saveLabels.addClickHandler(new ClickHandler() {
 
-			this.add(setup);
-		
-			
+					@Override
+					public void onClick(ClickEvent event) {
+						try {
+							Ovoto.getUi().setMessage("Saving Labels",true);
+							ballot.setLabels(labelsArea.getData());
+							ballot.setNumOfChoices(Integer.parseInt(numOfChoices.getText()));
+							cntrl.store(ballot); 
+						} catch(Exception e) {
+							Ovoto.getUi().setErrorMessage("ERROR: " + e.getMessage());
+						}
+					}
+				});
+			}
 
 
-		
+
+			this.add(new HTML("<hr/>"));
+
+			HorizontalPanel hp = new HorizontalPanel();
+			hp.add(new Label("Numbero of Choices: "));
+			hp.add(numOfChoices);
+			this.add(hp);
+			this.add(labelsArea);
+			this.add(saveLabels);
+
 
 		}
 	}
 
-	
-	
-class Voters extends FlowPanel {
-		
+
+
+	class Voters extends FlowPanel {
+
 		public Voters() {
 
 
 			//this is for update
 
+			if(ballot.getStatus() != Status.FINALIZED) {
 
-			Anchor chooseVoters  = new Anchor("Select Voters (now: " + ballot.getVoters().size()+")"); 
-			chooseVoters.addClickHandler(new ClickHandler() {
+				Anchor chooseVoters  = new Anchor("Select Voters (selected: " + ballot.getVoters().size()+")"); 
+				chooseVoters.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						Ovoto.getUi().setMessage("Selecting Voters");
+						VoterSelectDialog vsd = new VoterSelectDialog(ballot);
+						vsd.center();
+						vsd.show();
+					}
+				});
 
-				@Override
-				public void onClick(ClickEvent event) {
-					Ovoto.getUi().setMessage("Selecting Voters");
-					VoterSelectDialog vsd = new VoterSelectDialog(ballot);
-					vsd.center();
-					vsd.show();
-					//cntrl.activate(ballot);
-				}
-			});
-
-			this.add(chooseVoters);
+				this.add(chooseVoters);
+			} else
+				this.add(new Label("Ballot is Finalized"));
 
 			this.add(new HTML("<hr/>"));
 			//show selected users
@@ -179,38 +249,74 @@ class Voters extends FlowPanel {
 				sp.add(l);
 			}
 			this.add(sp);
-			
+
 			this.add(new HTML("<hr/>"));
-			//so we can add the activate anchor
-			Anchor activate = new Anchor("Activate");
 
-			activate.addClickHandler(new ClickHandler() {
 
-				@Override
-				public void onClick(ClickEvent event) {
-					Ovoto.getUi().setMessage("Activating",true);
-					cntrl.activate(ballot);
-				}
-			});
+			if(ballot.getStatus() != Status.FINALIZED) {
 
-			this.add(activate);
+				Anchor activate = new Anchor("Activate");
 
-			
+				activate.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						Ovoto.getUi().setMessage("Activating",true);
+						try {
+							cntrl.activate(ballot);
+						} catch (UnsupportedEncodingException e) {
+							Ovoto.getUi().setErrorMessage("Error: " + e.getMessage());
+						}
+					}
+				});
+
+				this.add(activate);
+			}
+
 		}
 	}
 
 	
 	
+	
+	class Emails extends FlowPanel {
+		Anchor send = new Anchor("Send");
+		TextBox emailSubj = new TextBox();
+		TextArea emailText = new TextArea();
+		
+		public Emails() {
+			add(new Label("#" + ballot.getVoters().size() + " voters."));
+			emailSubj.setWidth("350px");
+			emailText.setSize("350px", "220px");
+			
+			add(new Label("Subject:"));
+			add(emailSubj);
+			add(new Label("Body:"));
+			add(emailText);
+			add(send);
+			add(new Label("$credentials$, $directlink$, $fullname$, $qualifiedname"));
+			
+			send.addClickHandler(new ClickHandler() {
+				
+				@Override
+				public void onClick(ClickEvent event) {
+					cntrl.sendEmails(ballot,emailSubj.getText(),emailText.getText());
+				}
+			});
+			
+			
+		}
+	}
+
+	
+
+
 
 	public BallotForm(BallotControl cntrl0) {
 		super(2,Unit.EM);
 		this.cntrl = cntrl0;
 		setSize("400px", "400px");
 
-
-
 		this.add(new GeneralInfo(), "General");
-
 
 	}
 
@@ -225,6 +331,8 @@ class Voters extends FlowPanel {
 
 		this.add(new Configs(), "Configs");
 		this.add(new Voters(), "Voters");
+		this.add(new Emails(), "Emails");
+
 
 		//
 
@@ -243,13 +351,14 @@ class Voters extends FlowPanel {
 			setAutoHideEnabled(false);
 
 			setHTML("Select Voters");
-			
+
 			final SelectProfileRowProvider sprp = new SelectProfileRowProvider(b.getVoters());
 			ListaUtenti a = new ListaUtenti(sprp);
-			
+
 			VerticalPanel vp = new VerticalPanel();
 
 			HorizontalPanel hp = new HorizontalPanel();
+
 			Anchor close = new Anchor("Close");
 			close.addClickHandler(new ClickHandler() {
 
@@ -275,15 +384,27 @@ class Voters extends FlowPanel {
 					hide();
 				}
 			});
-
 			hp.add(save);
+
+			hp.add(new HTML("&nbsp;&nbsp;&nbsp;&nbsp;"));
+			Anchor all = new Anchor("Select All");
+			all.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					sprp.selectAll();
+				}
+			});
+			hp.add(all);
+
+
 			vp.add(hp);
 			vp.add(new HTML("<hr/>"));
-			
+
 			ScrollPanel sp = new ScrollPanel();
 			sp.setSize("400px","300px");
 			sp.add(a);
-			
+
 			vp.add(sp);
 
 			add(vp);

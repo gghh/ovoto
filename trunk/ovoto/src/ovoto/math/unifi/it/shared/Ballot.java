@@ -1,6 +1,7 @@
 package ovoto.math.unifi.it.shared;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.persistence.Id;
 
@@ -31,7 +32,7 @@ public class Ballot implements IsSerializable{
 	
 	
 	
-	//private HashMap<String,String> emailsToUsers;
+	//private HashMap<String,String> emailsToUsers = new HashMap<String,String>();
 	//private HashMap<Date,String> events;
 
 	//voters, per id
@@ -132,6 +133,14 @@ public class Ballot implements IsSerializable{
 	public int getNumOfChoices() {
 		return numOfChoices;
 	}
+
+//	public void setEmailsToUsers(HashMap<String,String> emailsToUsers) {
+//		this.emailsToUsers = emailsToUsers;
+//	}
+//
+//	public HashMap<String,String> getEmailsToUsers() {
+//		return emailsToUsers;
+//	}
 
 
 }
