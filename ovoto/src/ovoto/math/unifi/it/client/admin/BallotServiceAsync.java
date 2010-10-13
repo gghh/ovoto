@@ -21,7 +21,6 @@ public interface BallotServiceAsync {
 
 	void setupService(Ballot b, AsyncCallback<Ballot> callback);
 
-	void sendEmails(Ballot ballot, String subj, String body,
-			AsyncCallback<Ballot> asyncCallback);
+	void sendEmails(Ballot ballot, String subj, String body, String baseUrl, AsyncCallback<Ballot> callback);
 
 }

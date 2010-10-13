@@ -22,10 +22,11 @@ public class BallotUtils {
 
 		try {
 
-			URL url = new URL(b.getServiceUrl().getValue());
+			URL url = new URL(b.getServiceUrl());
 
 
 			HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+			connection.setConnectTimeout(0);
 			connection.setDoOutput(true);
 			connection.setRequestMethod("POST");
 
@@ -35,6 +36,9 @@ public class BallotUtils {
 			writer.write("&id=" + b.getBallotId());
 			writer.write("&accessToken=" + URLEncoder.encode(b.getServiceAccessToken(), "UTF-8"));
 			writer.write("&numOfChoices=" + b.getNumOfChoices());
+			writer.write("&startDate=" + b.getStartDate().getTime());
+			writer.write("&endDate=" + b.getEndDate().getTime());
+			writer.write("&ballotText=" + URLEncoder.encode(b.getBallotText(), "UTF-8"));
 
 			int i = 0;
 			for(String l : b.getLabels() ) {

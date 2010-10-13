@@ -5,20 +5,6 @@
 
 <web-app>
 
-	<!-- Servlets -->
-	<!--  <servlet>-->
-	<!--    <servlet-name>greetServlet</servlet-name>-->
-	<!--
-		<servlet-class>ovoto.math.unifi.it.server.GreetingServiceImpl</servlet-class>
-	-->
-	<!--  </servlet>-->
-	<!--  -->
-	<!--  <servlet-mapping>-->
-	<!--    <servlet-name>greetServlet</servlet-name>-->
-	<!--    <url-pattern>/ovoto/greet</url-pattern>-->
-	<!--  </servlet-mapping>-->
-	<!-- -->
-
 
 	<!--  Fake Urna  -->
 	<servlet>
@@ -82,6 +68,18 @@
 
 
 
+	<servlet>
+		<servlet-name>generateSetupForm</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.admin.GenerateSetupForm</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>generateSetupForm</servlet-name>
+		<url-pattern>/ovoto/admin/generateSetupForm</url-pattern>
+	</servlet-mapping>
+
+
+
+
 	<!--  Authentication  -->
 
 	<servlet>
@@ -95,8 +93,31 @@
 
 
 
+	<!--  EMAILS  -->
 
 
+	<servlet>
+		<servlet-name>emailsWorker</servlet-name>
+		<servlet-class>
+			ovoto.math.unifi.it.server.admin.EmailsWorker
+    </servlet-class>
+	</servlet>
+
+
+	<servlet-mapping>
+		<servlet-name>emailsWorker</servlet-name>
+		<url-pattern>/workers/sendEmails</url-pattern>
+	</servlet-mapping>
+
+
+	<security-constraint>
+		<web-resource-collection>
+			<url-pattern>/workers/*</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>
+			<role-name>admin</role-name>
+		</auth-constraint>
+	</security-constraint>
 
 
 	<!-- Default page to serve -->

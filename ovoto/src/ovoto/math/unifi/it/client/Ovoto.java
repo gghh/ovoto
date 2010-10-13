@@ -1,15 +1,21 @@
 package ovoto.math.unifi.it.client;
 
+import java.util.HashMap;
+import java.util.Map.Entry;
+
 import ovoto.math.unifi.it.client.admin.AdminUserProfileControl;
 import ovoto.math.unifi.it.client.admin.BallotControl;
 import ovoto.math.unifi.it.client.admin.BallotForm;
+import ovoto.math.unifi.it.client.admin.BulkUserImport;
 import ovoto.math.unifi.it.client.admin.ListaUtenti;
 import ovoto.math.unifi.it.client.admin.ListaVotazioni;
 import ovoto.math.unifi.it.client.admin.LoadProfileRowProvider;
 import ovoto.math.unifi.it.client.voter.VoterUserProfileControl;
 import ovoto.math.unifi.it.client.voter.VotingService;
 import ovoto.math.unifi.it.client.voter.VotingServiceAsync;
+import ovoto.math.unifi.it.shared.Ballot;
 import ovoto.math.unifi.it.shared.VotingData;
+import ovoto.math.unifi.it.shared.VotingToken;
 
 import com.google.appengine.api.users.User;
 import com.google.gwt.core.client.EntryPoint;
@@ -43,14 +49,11 @@ public class Ovoto implements EntryPoint {
 
 
 	private String code;
-	
+
 	public void onModuleLoad() {
 
-		//setup basic app layout
-		RootLayoutPanel.get().add(ui);
 
-		
-				
+
 
 		//entrypoint for voters
 		String id = Window.Location.getParameter("user");
@@ -59,11 +62,34 @@ public class Ovoto implements EntryPoint {
 			if(code == null)
 				code = Window.prompt("Password Required: ","");
 
+			
+			final String ballotId = Window.Location.getParameter("ballotId");
+			
+			
 			votingService.loadVotingData(id, code, new AsyncCallback<VotingData>() {
 
 				@Override
 				public void onSuccess(VotingData result) {
-					codeOk(result, code);
+					if(ballotId != null) { 									//search for the ballot
+						long bid = Long.valueOf(ballotId);
+						HashMap<Ballot, VotingToken> lt = result.getTokens();
+						for( Entry<Ballot, VotingToken> e : lt.entrySet()) {
+							long cbid = e.getKey().getBallotId();
+							if( cbid ==  bid) {
+								String toVote= UserProfileForm.votingUrl(e.getKey(), e.getValue());
+								Window.Location.replace(toVote);
+								return;
+							} else {
+								System.err.println(cbid + " != " + bid);
+							}
+						}
+						Window.alert("No Tokens Available");
+					} else {
+						//setup basic app layout
+						RootLayoutPanel.get().add(ui);
+
+						codeOk(result, code);
+					}
 				}
 
 				@Override
@@ -74,6 +100,9 @@ public class Ovoto implements EntryPoint {
 
 			return;
 		}
+
+		//setup basic app layout
+		RootLayoutPanel.get().add(ui);
 
 
 
@@ -102,20 +131,20 @@ public class Ovoto implements EntryPoint {
 	}
 
 
-	
+
 	private void authOk(User user) {
 
 		//TODO
 		// inserire AUTORIZZAZIONE !!!
 		//tipo user.getEmail() == qualcosa
 
-		
-		
+
+
 		//entrypoint for administration ...
 		//[will] require googleAccounts auth 
 		//RootPanel.get().add(vp);
-	
-		
+
+
 		final UserProfileControl upc = new AdminUserProfileControl();
 		final BallotControl bc = new BallotControl();
 
@@ -137,6 +166,24 @@ public class Ovoto implements EntryPoint {
 
 
 
+		Anchor b_createUser = new Anchor("BULK Create User");
+
+		b_createUser.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				BulkUserImport a = new BulkUserImport(upc);
+				ui.setContent(a);
+			}
+		});
+
+		ui.addSideControl(b_createUser);
+
+
+
+
+
+
 		Anchor listaUtenti = new Anchor("Lista utenti");
 
 		listaUtenti.addClickHandler(new ClickHandler() {
@@ -145,15 +192,13 @@ public class Ovoto implements EntryPoint {
 			public void onClick(ClickEvent event) {
 				ListaUtenti a = new ListaUtenti(new LoadProfileRowProvider());
 				ui.setContent(a);
-				//				a.show();
-				//				a.center();
 			}
 		});
 		ui.addSideControl(listaUtenti);
 
 
-		
-		
+
+
 		Anchor creaVotazione = new Anchor("Crea Votazione");
 
 		creaVotazione.addClickHandler(new ClickHandler() {
@@ -166,8 +211,8 @@ public class Ovoto implements EntryPoint {
 		});
 		ui.addSideControl(creaVotazione);
 
-		
-		
+
+
 		Anchor listaVotazioni = new Anchor("Lista Votazioni");
 
 		listaVotazioni.addClickHandler(new ClickHandler() {
@@ -182,8 +227,8 @@ public class Ovoto implements EntryPoint {
 		});
 		ui.addSideControl(listaVotazioni);
 
-		
-		
+
+
 
 		Anchor logout = new Anchor("Logout (dev)");
 
@@ -200,15 +245,15 @@ public class Ovoto implements EntryPoint {
 
 	//the voter can proceed.
 	private void codeOk(VotingData vd, String code) {
-		
+
 		UserProfileControl upc = new VoterUserProfileControl(code);
 
 		UserProfileForm a = new UserProfileForm(vd,upc);
 		ui.setContent(a);
-	
+
 	}
-	
-	
-	
+
+
+
 
 }

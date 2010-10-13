@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import ovoto.math.unifi.it.client.Ovoto;
 import ovoto.math.unifi.it.shared.Ballot;
+import ovoto.math.unifi.it.shared.Ballot.Status;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -22,6 +23,9 @@ public class BallotControl {
 
 	public void store(Ballot b) {
 
+		if(b.getServiceAccessId() != null && !("".equals(b.getServiceAccessId())) && b.getStatus() == Status.TO_BE_CONTINUED) {
+			b.setStatus(Status.READY);
+		}
 		Ovoto.getUi().setMessage("Saving entry....",true);
 
 
@@ -40,9 +44,7 @@ public class BallotControl {
 				Ovoto.getUi().setErrorMessage("ahi ahi ahi " + caught.getMessage());
 			}
 		});
-
 	}
-
 
 	private void loadSavedBallot(Long id) {
 		Key<Ballot> key = new Key<Ballot>(Ballot.class, id);
@@ -121,7 +123,7 @@ public class BallotControl {
 		JsonpRequestBuilder jsonp = new JsonpRequestBuilder();
 
 
-		String url = ballot.getServiceUrl().getValue();
+		String url = ballot.getServiceUrl();
 		url += "?mode=ACTIVATE";
 		url += "&accessToken=" + URL.encode(ballot.getServiceAccessToken());
 		url += "&accessId=" + URL.encode(ballot.getServiceAccessId());
@@ -200,31 +202,181 @@ public class BallotControl {
 	}
 
 
-	public void setup(Ballot ballot) {
+	//	public void setup(Ballot ballot) {
+	//
+	//
+	//		//System.err.println(scrambled);
+	//		
+	//		ballotService.setupService(ballot, new AsyncCallback<Ballot>() {
+	//
+	//			@Override
+	//			public void onSuccess(Ballot result) {
+	//				//dialog.hide();
+	//				BallotForm a = new BallotForm(result,BallotControl.this);
+	//				Ovoto.getUi().setContent(a);
+	//			}
+	//
+	//			@Override
+	//			public void onFailure(Throwable caught) {
+	//				Window.alert("Errror during ballot setup: " + caught.getMessage());
+	//				Ovoto.getUi().setErrorMessage(caught.getMessage());
+	//			}
+	//		});
+	//	}
 
 
-		//System.err.println(scrambled);
-		ballotService.setupService(ballot, new AsyncCallback<Ballot>() {
+	//metodo alternativo.
 
-			@Override
-			public void onSuccess(Ballot result) {
-				//dialog.hide();
-				BallotForm a = new BallotForm(result,BallotControl.this);
-				Ovoto.getUi().setContent(a);
-			}
+	//	public void setup(final Ballot ballot) {
+	//
+	//
+	//		//System.err.println(scrambled);
+	//
+	//		//prepara una form in un popup perl'utente e glie la fa spedire.
+	//		final DialogBox pp = new DialogBox();
+	//
+	//		FormPanel f = new FormPanel();
+	//
+	//
+	//		f.addSubmitCompleteHandler(new SubmitCompleteHandler() {
+	//
+	//			@Override
+	//			public void onSubmitComplete(SubmitCompleteEvent event) {
+	//				ballot.setServiceAccessId(event.getResults());
+	//				ballot.setStatus(Status.READY);
+	//				pp.hide();
+	//				BallotForm a = new BallotForm(ballot,BallotControl.this);
+	//				Ovoto.getUi().setContent(a);
+	//				Window.alert("AccessToken "+event.getResults()+" REMEMBER TO SAVE THE BALLOT BEFORE PROCEEDING");
+	//				//Window.alert(event.getResults());
+	//			}
+	//		});
+	//
+	//		VerticalPanel vp = new VerticalPanel();
+	//		vp.setSize("400px", "300px");
+	//		ScrollPanel sp = new ScrollPanel();
+	//
+	//		SubmitButton submit = new SubmitButton("Store");
+	//
+	//		Button cancel = new Button("Cancel");
+	//		cancel.addClickHandler(new ClickHandler() {		
+	//			@Override
+	//			public void onClick(ClickEvent event) {
+	//				pp.hide();
+	//				Ovoto.getUi().setMessage("Setup cancelled");
+	//			}
+	//		});
+	//
+	//
+	//
+	//		VerticalPanel vp2 = new VerticalPanel();
+	//
+	//		//i fields sono quelli in ovoto.math.unifi.it.server.admin.BallotUtils.setupBallot(Ballot)
+	//
+	//		f.setAction(ballot.getServiceUrl());
+	//		f.setMethod(FormPanel.METHOD_POST);
+	//
+	//		TextBox fld = new TextBox();
+	//		fld.setName("mode");
+	//		fld.setValue("SETUP");
+	//		vp2.add(fld);
+	//
+	//		fld = new TextBox();
+	//		fld.setName("ballotText");
+	//		fld.setValue("" + ballot.getBallotText());
+	//		vp2.add(fld);
+	//
+	//		
+	//		fld = new TextBox();
+	//		fld.setName("id");
+	//		fld.setValue("" + ballot.getBallotId());
+	//		vp2.add(fld);
+	//
+	//		fld = new TextBox();
+	//		fld.setName("accessToken");
+	//		fld.setValue( ballot.getServiceAccessToken());
+	//		vp2.add(fld);
+	//
+	//		fld = new TextBox();
+	//		fld.setName("numOfChoices");
+	//		fld.setValue("" + ballot.getNumOfChoices());
+	//		vp2.add(fld);
+	//
+	//		fld = new TextBox();
+	//		fld.setName("startDate");
+	//		fld.setValue( "" +ballot.getStartDate().getTime());
+	//		vp2.add(fld);
+	//
+	//		fld = new TextBox();
+	//		fld.setName("endDate");
+	//		fld.setValue( "" +ballot.getEndDate().getTime());
+	//		vp2.add(fld);
+	//
+	//
+	//		int i=0;
+	//		for(String l : ballot.getLabels()) {
+	//			TextBox tb = new TextBox();
+	//
+	//			tb.setName("label" +i);
+	//			tb.setValue(l);
+	//			tb.setReadOnly(true);
+	//			vp2.add(tb);
+	//			i++;
+	//		}
+	//		sp.add(vp2);
+	//		vp.add(sp);
+	//		HorizontalPanel hp = new HorizontalPanel();
+	//		hp.add(submit);
+	//		hp.add(cancel);
+	//
+	//		vp.add(hp);
+	//		f.add(vp);
+	//
+	//
+	//		pp.add(f);
+	//		pp.center();
+	//		pp.show();
+	//
+	//		//				ballotService.setupService(ballot, new AsyncCallback<Ballot>() {
+	//		//	
+	//		//					@Override
+	//		//					public void onSuccess(Ballot result) {
+	//		//						//dialog.hide();
+	//		//						BallotForm a = new BallotForm(result,BallotControl.this);
+	//		//						Ovoto.getUi().setContent(a);
+	//		//					}
+	//		//	
+	//		//					@Override
+	//		//					public void onFailure(Throwable caught) {
+	//		//						Window.alert("Errror during ballot setup: " + caught.getMessage());
+	//		//						Ovoto.getUi().setErrorMessage(caught.getMessage());
+	//		//					}
+	//		//				});
+	//		//			}
+	//	}
 
-			@Override
-			public void onFailure(Throwable caught) {
-				Window.alert("Errror during ballot setup: " + caught.getMessage());
-				Ovoto.getUi().setErrorMessage(caught.getMessage());
-			}
-		});
+	//metodo ancora + alternativo
+
+	public void setup(Ballot b) {
+
+		//chiama un servizio che genera la form da submittare
+		//url del servizio che genra la form
+		String url = GWT.getModuleBaseURL() + "admin/generateSetupForm?ballotId=" + b.getBallotId();
+		Window.open(url, "Setup", "location=1,status=1,scrollbars=1,width=600,height=450");
+
+		//e rimette il ballot alla pagina iniziale che non fa mai male
+		BallotForm a = new BallotForm(b,BallotControl.this);
+		Ovoto.getUi().setContent(a);
+		
+
 	}
 
 
+
 	public void sendEmails(Ballot ballot, String subj, String body) {
-		
-		ballotService.sendEmails(ballot,subj,body, new AsyncCallback<Ballot>() {
+		String url = GWT.getHostPageBaseURL();
+
+		ballotService.sendEmails(ballot,subj,body, url, new AsyncCallback<Ballot>() {
 
 			@Override
 			public void onSuccess(Ballot result) {
@@ -239,8 +391,8 @@ public class BallotControl {
 				Ovoto.getUi().setErrorMessage(caught.getMessage());
 			}
 		});
-		
-		
+
+
 	}
 
 

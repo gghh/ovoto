@@ -1,19 +1,19 @@
 package ovoto.math.unifi.it.server.admin;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
-
-import org.antlr.stringtemplate.StringTemplate;
 
 import ovoto.math.unifi.it.client.admin.BallotService;
 import ovoto.math.unifi.it.client.admin.BallotServiceCommunicationErrorException;
 import ovoto.math.unifi.it.client.admin.MailSendingException;
-import ovoto.math.unifi.it.server.ProfileUtils;
 import ovoto.math.unifi.it.shared.Ballot;
 import ovoto.math.unifi.it.shared.Utente;
 import ovoto.math.unifi.it.shared.VotingToken;
 import ovoto.math.unifi.it.shared.Ballot.Status;
 
+import com.google.appengine.api.labs.taskqueue.QueueFactory;
+import com.google.appengine.api.labs.taskqueue.TaskOptions;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
@@ -32,6 +32,8 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 		ObjectifyService.register(Utente.class);
 		ObjectifyService.register(Ballot.class);
 		ObjectifyService.register(VotingToken.class);
+		ObjectifyService.register(EmailsSequence.class);
+		
 	}
 
 
@@ -77,9 +79,13 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 
 		//ArrayList<Utente> voters = ProfileUtils.listProfiles(ballot.getVoters());
 
+		//una mischiatina in questi cas non fa mai male !!!
+		Collections.shuffle(scrambled);
+		
+		
 		int i=0;
 		for(String uId: ballot.getVoters()) {
-			VotingToken vt = new VotingToken(scrambled.get(i++), null, null, ballot.getBallotId(), uId);
+			VotingToken vt = new VotingToken(scrambled.get(i++), ballot.getStartDate(), ballot.getEndDate(), ballot.getBallotId(), uId);
 			ofy.put(vt);
 		}
 
@@ -104,46 +110,29 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 	}
 
 
+	
+	
+		
 	@Override
-	public Ballot sendEmails(Ballot ballot, String subj, String body) throws MailSendingException {
+	public Ballot sendEmails(Ballot ballot, String subj, String body, String baseUrl) throws MailSendingException {
 
 		
 		//VA FATTA UNA TASKQUEUE !!!
+		//
+		// ALLA QUALE PASSARE la lista di voters e che ne spedisce 5 e poi chiama la queue successiva
+		// crea la squenza die email da scrivere e la mette sul db.
 		
 		
-		ArrayList<Utente> lu = ProfileUtils.listProfiles(ballot.getVoters());
-
-		String baseUrl = "";
-
-		StringTemplate st = new StringTemplate(body);
+		EmailsSequence e = new EmailsSequence(ballot.getVoters(),subj,body,baseUrl,ballot.getBallotId().toString());
+		Objectify ofy = ObjectifyService.begin();
+		Key<EmailsSequence> k = ofy.put(e);
 		
-		for(Utente u:lu) {
-
-			String cred = ProfileUtils.credentialsUrl(baseUrl, u);
-			String dirLink = cred + "&ballot="+ ballot.getBallotId();
-			String fullName = ProfileUtils.getFullName(u);
-			String qualifiedName = ProfileUtils.getQualifiedName(u);
-
-			st.setAttribute("credentials", cred );
-			st.setAttribute("directlink", dirLink );
-			st.setAttribute("fullname", fullName );
-			st.setAttribute("qualifiedname", qualifiedName );
-
-			String mailbody = st.toString();
-
-			st.reset();
-
-			//System.out.println("orig: " + body);
-			System.out.println("txt: " + mailbody);
-
-			try {
-				ProfileUtils.sendEmail(u,subj,mailbody);
-			} catch (Exception e) {
-				throw new MailSendingException(e.getMessage());
-			}
-		}
+		QueueFactory.getDefaultQueue().add(
+				TaskOptions.Builder.url("/workers/sendEmails")
+				.param("emailSequence",Long.toString(k.getId()).getBytes())
+				); 
 		
-		//ballot.setEmail(data,subject,body);
+
 		
 		return ballot;
 	}

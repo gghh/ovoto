@@ -20,5 +20,5 @@ public interface BallotService extends RemoteService {
 	ArrayList<Ballot> listBallots();
 	Ballot setupService(Ballot b) throws BallotServiceCommunicationErrorException;
 	Ballot storeTokens(Ballot ballot, Vector<String> scrambled);
-	Ballot sendEmails(Ballot ballot, String subj, String body) throws MailSendingException;
+	Ballot sendEmails(Ballot ballot, String subj, String body, String baseUrl) throws MailSendingException;
 }
