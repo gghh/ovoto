@@ -4,7 +4,7 @@
 
 	<ui:style>
 		.header {
-			background-color: Skyblue;
+			background-color: lightGray;
 			border: 1pt solid #009;
 			font-size: 14pt;
 			text-align: center;
@@ -13,19 +13,19 @@
 		}
 		
 		.body {
-			background-color: pink;
+			background-color: lightGray;
 			/*border: 1pt solid #009;*/
 		}
 		
 		.sidebar {
-			background-color: green;
-			border: 1pt solid #009;
+			background-color: lightGray;
+			border-right: 1pt solid #009;
 			width: 100%;
 		}
 		
 		.messages {
 			background-color: white;
-			border: 1pt solid #009;
+			border-top: 1pt solid #009;
 			width: 100%;
 		}
 		

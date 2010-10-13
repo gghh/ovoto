@@ -219,14 +219,20 @@ public class ProfileUtils {
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 		Message msg = new MimeMessage(session);
-		msg.setFrom(new InternetAddress("ovoto.anagrafe@gmail.com", "O'voto Administrator"));
+		msg.setFrom(new InternetAddress("ovoto.anagrafe@gmail.com", "Sistema di voto elettronico"));
 		msg.addRecipient(Message.RecipientType.TO, new InternetAddress(u.getEmail(), getQualifiedName(u)));
 		msg.setSubject(subj);
 		msg.setText(mailbody);
 		Transport.send(msg);
 		
-		//System.err.println("sent email :" + mailbody);
+		System.err.println("sent email :" + mailbody);
 		
+	}
+
+
+	public static Utente getProfileByKey(Key<Utente> k) {
+		Objectify ofy = ObjectifyService.begin();
+		return ofy.get(k);
 	}
 
 

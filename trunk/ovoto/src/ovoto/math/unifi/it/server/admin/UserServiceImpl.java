@@ -32,21 +32,21 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
 		// Verify that the input is valid. 
 		//static ?
 
-		String nome = utente.getNome();
-		for(int i=0; i< 100 ;i++) {
+		//String nome = utente.getNome();
+		//for(int i=0; i< 100 ;i++) {
 
-			//if(utente.getId() == null || "".equals(utente.getId())) {
+			if(utente.getId() == null || "".equals(utente.getId())) {
 				String id  = ProfileUtils.getFreshId();
 				utente.setId(id);
 				//System.err.println("aLV:" + i);
-				utente.setNome(nome + ":" + i);
+				//utente.setNome(nome + ":" + i);
 				//we create the code too
 				String code = ProfileUtils.getFreshCode();
 				String pw = ProfileUtils.codeExternal2Internal(code);
 				utente.setCode(pw);
-			//}
+			}
 			ProfileUtils.writeProfile(utente);
-		}
+		//}
 
 		return utente.getId();
 	}

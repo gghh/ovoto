@@ -3,6 +3,7 @@ package ovoto.math.unifi.it.client.admin;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 
 import ovoto.math.unifi.it.client.Ovoto;
 import ovoto.math.unifi.it.shared.Ballot;
@@ -15,6 +16,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DecoratorPanel;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -26,6 +28,7 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.datepicker.client.DateBox;
 
 public class BallotForm extends TabLayoutPanel {
 
@@ -37,6 +40,8 @@ public class BallotForm extends TabLayoutPanel {
 	private TextBox serviceUrl = new TextBox();
 	private TextBox accessToken = new TextBox();
 	private TextBox accessId = new TextBox();
+	private DateBox startDate = new DateBox();
+	private DateBox endDate = new DateBox();
 
 	//Setup
 	private LabelsArea labelsArea = new LabelsArea();
@@ -83,19 +88,24 @@ public class BallotForm extends TabLayoutPanel {
 
 
 					//Date d = new Date();
-					Link desc = new Link(ballotUrl.getText());
-					Link svc = new Link(serviceUrl.getText());
+					String desc = ballotUrl.getText();
+					String  svc = serviceUrl.getText();
+
+					Date start = startDate.getValue();
+					Date end = endDate.getValue();
 
 					if(ballot==null) {
-						ballot = new Ballot(ballotText.getText(),desc,svc,accessToken.getText());
+						ballot = new Ballot(ballotText.getText(),desc,start,end,svc,accessToken.getText());
 						//ballot.setDate_creation(d); //now
 					} else {
 						ballot.setBallotText(ballotText.getText());
 						ballot.setBallotUrl(desc);
 						ballot.setServiceUrl(svc);
+						ballot.setStartDate(start);
+						ballot.setEndDate(end);
+						ballot.setAccessId(accessId.getText());
 					}
 					cntrl.store(ballot);
-
 				}
 			});
 
@@ -110,12 +120,17 @@ public class BallotForm extends TabLayoutPanel {
 			ft.setHTML(row, 0, "url descrizione");
 			ft.setWidget(row++, 1, ballotUrl);
 
+			ft.setHTML(row, 0, "data inizio");
+			ft.setWidget(row++, 1, startDate);
+			ft.setHTML(row, 0, "data fine");
+			ft.setWidget(row++, 1, endDate);
+
 			ft.setHTML(row, 0, "service url");
 			ft.setWidget(row++, 1, serviceUrl);
 			ft.setHTML(row, 0, "access Token");
 			ft.setWidget(row++, 1, accessToken);
 
-			accessId.setReadOnly(true);
+			//accessId.setReadOnly(true);
 			ft.setHTML(row, 0, "access Id");
 			ft.setWidget(row++, 1, accessId);
 
@@ -128,6 +143,64 @@ public class BallotForm extends TabLayoutPanel {
 
 			this.add(ft);
 			add(save);
+
+
+			if(ballot!= null) {
+
+				DecoratorPanel dp = new DecoratorPanel();
+				//dp.setWidth("90%");
+				//dp.add(l);
+
+				VerticalPanel vp = new VerticalPanel();
+
+				if(ballot.getStatus() == Status.TO_BE_CONTINUED) {
+					Label l = new Label(" (numOfChoices: " + ballot.getNumOfChoices() + " labels: " + ballot.getLabels().size()+")");
+					Anchor setup = new Anchor("Setup");
+					HorizontalPanel hp = new HorizontalPanel();
+					hp.add(setup);
+					hp.add(l);
+
+					setup.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Ovoto.getUi().setMessage("Setting Up",true);
+							cntrl.setup(ballot);
+						}
+					});
+					vp.add(hp);
+				} else {
+					vp.add(new Label("setup already done"));
+				} 
+
+
+
+				if(ballot.getStatus() == Status.READY) {
+					Label l = new Label(" (numOfChoices: " + ballot.getNumOfChoices() + " labels: " + ballot.getLabels().size()+" voters: " + ballot.getVoters().size()+")");
+					Anchor activate = new Anchor("Activate");
+					HorizontalPanel hp = new HorizontalPanel();
+					hp.add(activate);
+					hp.add(l);
+					activate.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Ovoto.getUi().setMessage("Activating",true);
+							try {
+								cntrl.activate(ballot);
+							} catch (UnsupportedEncodingException e) {
+								Ovoto.getUi().setErrorMessage("Error: " + e.getMessage());
+							}
+						}
+					});
+					vp.add(hp);
+				} else if(ballot.getStatus() == Status.TO_BE_CONTINUED) {
+					vp.add(new Label("not ready for activation"));
+				} else if(ballot.getStatus() == Status.FINALIZED) {
+					vp.add(new Label("activation already done"));
+				}
+				dp.add(vp);
+				this.add(dp);
+			}
+
 		}
 	}
 
@@ -154,7 +227,7 @@ public class BallotForm extends TabLayoutPanel {
 
 
 	class Configs extends FlowPanel {
-		Anchor setup = new Anchor("Setup");
+
 		Anchor saveLabels = new Anchor("Save Labels");
 
 		private void setDisabled() {
@@ -172,18 +245,7 @@ public class BallotForm extends TabLayoutPanel {
 				setDisabled();
 				this.add(new Label("Ballot setup done."));
 			} else {
-				this.add(setup);
-				setup.addClickHandler(new ClickHandler() {
-
-					@Override
-					public void onClick(ClickEvent event) {
-						Ovoto.getUi().setMessage("Activating",true);
-						cntrl.setup(ballot);
-					}
-				});
-
 				saveLabels.addClickHandler(new ClickHandler() {
-
 					@Override
 					public void onClick(ClickEvent event) {
 						try {
@@ -251,63 +313,42 @@ public class BallotForm extends TabLayoutPanel {
 			this.add(sp);
 
 			this.add(new HTML("<hr/>"));
-
-
-			if(ballot.getStatus() != Status.FINALIZED) {
-
-				Anchor activate = new Anchor("Activate");
-
-				activate.addClickHandler(new ClickHandler() {
-					@Override
-					public void onClick(ClickEvent event) {
-						Ovoto.getUi().setMessage("Activating",true);
-						try {
-							cntrl.activate(ballot);
-						} catch (UnsupportedEncodingException e) {
-							Ovoto.getUi().setErrorMessage("Error: " + e.getMessage());
-						}
-					}
-				});
-
-				this.add(activate);
-			}
-
 		}
 	}
 
-	
-	
-	
+
+
+
 	class Emails extends FlowPanel {
 		Anchor send = new Anchor("Send");
 		TextBox emailSubj = new TextBox();
 		TextArea emailText = new TextArea();
-		
+
 		public Emails() {
 			add(new Label("#" + ballot.getVoters().size() + " voters."));
 			emailSubj.setWidth("350px");
 			emailText.setSize("350px", "220px");
-			
+
 			add(new Label("Subject:"));
 			add(emailSubj);
 			add(new Label("Body:"));
 			add(emailText);
 			add(send);
-			add(new Label("$credentials$, $directlink$, $fullname$, $qualifiedname"));
-			
+			add(new Label("$credentials$, $directlink$, $fullname$, $qualifiedname$"));
+
 			send.addClickHandler(new ClickHandler() {
-				
+
 				@Override
 				public void onClick(ClickEvent event) {
 					cntrl.sendEmails(ballot,emailSubj.getText(),emailText.getText());
 				}
 			});
-			
-			
+
+
 		}
 	}
 
-	
+
 
 
 
@@ -321,20 +362,26 @@ public class BallotForm extends TabLayoutPanel {
 	}
 
 	public BallotForm(Ballot u, BallotControl cntrl0) {
-		this(cntrl0);
+		super(2,Unit.EM);
 		this.ballot = u;
+		this.cntrl = cntrl0;
+		setSize("400px", "400px");
+
+		this.add(new GeneralInfo(), "General");
+
 		ballotText.setText(ballot.getBallotText());
-		ballotUrl.setText(ballot.getBallotUrl().getValue());
-		serviceUrl.setText(ballot.getServiceUrl().getValue());
+		ballotUrl.setText(ballot.getBallotUrl());
+		serviceUrl.setText(ballot.getServiceUrl());
 		accessToken.setText(ballot.getServiceAccessToken());
 		accessId.setText(ballot.getServiceAccessId());
+
+		startDate.setValue(ballot.getStartDate());
+		endDate.setValue(ballot.getEndDate());
+
 
 		this.add(new Configs(), "Configs");
 		this.add(new Voters(), "Voters");
 		this.add(new Emails(), "Emails");
-
-
-		//
 
 
 

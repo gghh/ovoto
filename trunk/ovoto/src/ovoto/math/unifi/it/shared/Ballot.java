@@ -1,11 +1,10 @@
 package ovoto.math.unifi.it.shared;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 
 import javax.persistence.Id;
 
-import com.google.appengine.api.datastore.Link;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class Ballot implements IsSerializable{
@@ -21,8 +20,8 @@ public class Ballot implements IsSerializable{
 		
 	
 	private String ballotText;
-	private Link ballotUrl;  //descriptive page
-	private Link serviceUrl; //the external voting service
+	private String ballotUrl;  //descriptive page
+	private String serviceUrl; //the external voting service
 	
 	private Status status = Status.TO_BE_CONTINUED;
 	
@@ -31,7 +30,7 @@ public class Ballot implements IsSerializable{
 	private String serviceAccessId = ""; //has to be sent to the service to generate tokens it is sent by the service upon creation
 	
 	
-	
+	private Date startDate, endDate;
 	//private HashMap<String,String> emailsToUsers = new HashMap<String,String>();
 	//private HashMap<Date,String> events;
 
@@ -48,9 +47,11 @@ public class Ballot implements IsSerializable{
 	
 	protected Ballot() {}
 
-	public Ballot(String ballotText, Link ballotUrl, Link serviceUrl, String accessToken) {
+	public Ballot(String ballotText, String ballotUrl, Date startDate, Date endDate, String serviceUrl, String accessToken) {
 		this.ballotText = ballotText;
 		this.setBallotUrl(ballotUrl);
+		this.setStartDate(startDate);
+		this.endDate  = endDate;
 		this.setServiceUrl(serviceUrl);
 		this.setServiceAccessToken(accessToken);
 	}
@@ -78,19 +79,19 @@ public class Ballot implements IsSerializable{
 		this.status = status;
 	}
 
-	public void setBallotUrl(Link ballotUrl) {
+	public void setBallotUrl(String ballotUrl) {
 		this.ballotUrl = ballotUrl;
 	}
 
-	public Link getBallotUrl() {
+	public String getBallotUrl() {
 		return ballotUrl;
 	}
 
-	public void setServiceUrl(Link serviceUrl) {
+	public void setServiceUrl(String serviceUrl) {
 		this.serviceUrl = serviceUrl;
 	}
 
-	public Link getServiceUrl() {
+	public String getServiceUrl() {
 		return serviceUrl;
 	}
 
@@ -132,6 +133,26 @@ public class Ballot implements IsSerializable{
 
 	public int getNumOfChoices() {
 		return numOfChoices;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setAccessId(String aid) {
+		this.serviceAccessId = aid;
 	}
 
 //	public void setEmailsToUsers(HashMap<String,String> emailsToUsers) {

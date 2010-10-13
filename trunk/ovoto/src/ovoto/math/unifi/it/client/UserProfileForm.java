@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -195,6 +196,7 @@ public class UserProfileForm extends SimplePanel {
 
 		vp.add(new TokensDisplayList(vd));
 
+		vp.add(new HTML("<HR/>"));
 
 
 	}
@@ -212,11 +214,17 @@ public class UserProfileForm extends SimplePanel {
 				Ballot b =  e.getKey();
 				VotingToken vt = e.getValue();
 
-				//this.setWidget(row, 0,new Anchor(b.getBallotText(), b.getBallotUrl(),"_blank"));
 
-				//String dest = b.getVotingUrl() + "/vote?ballotId="+b.getBallotId() + "&token=" + vt.getTokenText();
+				if(b.getBallotUrl() == null || "".equals(b.getBallotUrl().trim())) {
+					this.setWidget(row, 0,new Label(b.getBallotText()));
+				} else {
+					this.setWidget(row, 0,
+							new Anchor(b.getBallotText(), b.getBallotUrl(),"_blank"));
+				}
+				String dest = votingUrl( b,  vt);
+				//b.getServiceUrl() + "?mode=VOTE&ballotId="+b.getBallotId() + "&token=" + vt.getTokenText();
 
-				//this.setWidget(row++, 1, new Anchor("VoteNow", dest, "_blank"));
+				this.setWidget(row++, 1, new Anchor("Vote Now", dest, "_blank"));
 			}
 
 		}
@@ -225,6 +233,9 @@ public class UserProfileForm extends SimplePanel {
 	}
 
 
+	public static String votingUrl(Ballot b, VotingToken vt) {
+		return  b.getServiceUrl() + "?mode=VOTE&ballotId="+b.getBallotId() + "&token=" + vt.getTokenText();
+	}
 
 
 }
