@@ -65,7 +65,7 @@ public class ProfileUtils {
 			e.printStackTrace();
 		} 
 	}
-	
+
 	//intended for voters
 	public static void reNotifyCredentialsUserAuthenticated(String url,String id, String code) throws InvalidCredentialsException {
 		Utente su = getProfile(id, code);
@@ -83,15 +83,15 @@ public class ProfileUtils {
 			throw new InvalidCredentialsException("Invalid user");
 
 		//try {
-			String pw = codeExternal2Internal(code);
+		String pw = codeExternal2Internal(code);
 
-			//System.err.println(pw);
-			//System.err.println(u.getCode());
+		//System.err.println(pw);
+		//System.err.println(u.getCode());
 
-			if(! pw.equals(u.getCode())) 
-				throw new InvalidCredentialsException("Invalid code");
+		if(! pw.equals(u.getCode())) 
+			throw new InvalidCredentialsException("Invalid code");
 
-			return u;
+		return u;
 
 		//} catch (NoSuchAlgorithmException e) {
 		//	throw new InvalidCredentialsException("Internal Error");
@@ -108,20 +108,20 @@ public class ProfileUtils {
 		//rigenera la pw
 		String new_code = getFreshCode();
 		//try {
-			String pw = codeExternal2Internal(new_code);
-			su.setCode(pw);
-			//e la spedice all'email
-			writeProfile(su);
+		String pw = codeExternal2Internal(new_code);
+		su.setCode(pw);
+		//e la spedice all'email
+		writeProfile(su);
 
-			try {
-				notifyCodeToUser(url,su,new_code);
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (MessagingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			notifyCodeToUser(url,su,new_code);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//} catch (NoSuchAlgorithmException e1) {
 		//	// TODO Auto-generated catch block
 		//	e1.printStackTrace();
@@ -145,9 +145,9 @@ public class ProfileUtils {
 
 	}
 
-	
-	
-	
+
+
+
 	public static String getFreshCode() {
 		return  RandomStringUtils.randomAlphabetic(16);
 	}
@@ -165,10 +165,10 @@ public class ProfileUtils {
 		Query<Utente> all = ofy.query(Utente.class);
 
 		ArrayList<Utente> lu = new ArrayList<Utente>();
-		
+
 		for( Utente u : all) 
 			lu.add(u);
-		
+
 		Collections.sort(lu, new Comparator<Utente>() {
 			@Override
 			public int compare(Utente o1, Utente o2) {
@@ -196,11 +196,11 @@ public class ProfileUtils {
 	}
 
 
-	
+
 	public static String credentialsUrl(String baseUrl,Utente u, String code) {
 		return  baseUrl + "?user=" + u.getId() + "&code=" + code;
 	}
-	
+
 	public static String credentialsUrl(String baseUrl, Utente u) {
 		return credentialsUrl(baseUrl, u, codeInternal2External(u.getCode()));
 	}
@@ -211,7 +211,10 @@ public class ProfileUtils {
 	}
 
 	public static String getQualifiedName(Utente u) {
-		return u.getTitolo() + " " +getFullName(u);
+		if(null == u.getTitolo())
+			return getFullName(u);
+		else
+			return u.getTitolo() + " " +getFullName(u);
 	}
 
 
@@ -224,9 +227,9 @@ public class ProfileUtils {
 		msg.setSubject(subj);
 		msg.setText(mailbody);
 		Transport.send(msg);
-		
+
 		System.err.println("sent email :" + mailbody);
-		
+
 	}
 
 
