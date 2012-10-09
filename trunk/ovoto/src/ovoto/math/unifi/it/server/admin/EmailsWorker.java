@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import ovoto.math.unifi.it.shared.Utente;
 
-import com.google.appengine.api.labs.taskqueue.QueueFactory;
-import com.google.appengine.api.labs.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
@@ -123,7 +123,7 @@ public class EmailsWorker extends HttpServlet {
 			if(cont) { 
 				ofy.put(es);
 				QueueFactory.getDefaultQueue().add(
-						TaskOptions.Builder.url("/workers/sendEmails")
+						TaskOptions.Builder.withUrl("/workers/sendEmails")
 						.param("emailSequence",seqId.getBytes()).countdownMillis(35000)
 				); 
 			} else { 

@@ -8,12 +8,12 @@ import ovoto.math.unifi.it.client.admin.BallotService;
 import ovoto.math.unifi.it.client.admin.BallotServiceCommunicationErrorException;
 import ovoto.math.unifi.it.client.admin.MailSendingException;
 import ovoto.math.unifi.it.shared.Ballot;
+import ovoto.math.unifi.it.shared.Ballot.Status;
 import ovoto.math.unifi.it.shared.Utente;
 import ovoto.math.unifi.it.shared.VotingToken;
-import ovoto.math.unifi.it.shared.Ballot.Status;
 
-import com.google.appengine.api.labs.taskqueue.QueueFactory;
-import com.google.appengine.api.labs.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
@@ -128,7 +128,7 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 		Key<EmailsSequence> k = ofy.put(e);
 		
 		QueueFactory.getDefaultQueue().add(
-				TaskOptions.Builder.url("/workers/sendEmails")
+				TaskOptions.Builder.withUrl("/workers/sendEmails")
 				.param("emailSequence",Long.toString(k.getId()).getBytes())
 				); 
 		
