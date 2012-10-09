@@ -11,7 +11,6 @@
 	<!--	<inherits name='com.google.gwt.user.theme.dark.Dark' />-->
 
 	<inherits name="com.google.gwt.uibinder.UiBinder" />
-	<inherits name='com.google.gwt.requestfactory.RequestFactory' />
 	<inherits name="com.google.gwt.jsonp.Jsonp"/>
 	
 	
