@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
-  <application>ovoto-anagrafe</application>
+  <application>votingbin</application>
   <version>1</version>
 
   <!-- Configure serving/caching of GWT files -->
@@ -19,4 +19,6 @@
     <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
   </system-properties>
 
+  
+  <threadsafe>true</threadsafe>
 </appengine-web-app>
