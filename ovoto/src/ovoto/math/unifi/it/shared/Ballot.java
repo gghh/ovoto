@@ -6,7 +6,11 @@ import java.util.Date;
 import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import com.googlecode.objectify.annotation.Unindexed;
 
+
+
+@Unindexed
 public class Ballot implements IsSerializable{
 
 	public enum Status {
