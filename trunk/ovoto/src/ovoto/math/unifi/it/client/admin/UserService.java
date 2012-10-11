@@ -19,4 +19,5 @@ public interface UserService extends RemoteService {
 	void changeCodeAndNotify(String url, Utente u);
 	void sendCredentials(String url, Utente u);
 	ArrayList<Utente> listUtenti(ArrayList<String> list);
+	void sendEmail_TEMPORARY(String from, String to) throws MailSendingException;
 }

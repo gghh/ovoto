@@ -18,4 +18,6 @@ public interface UserServiceAsync {
 	void sendCredentials(String url, Utente u, AsyncCallback<Void> callback);
 	void listUtenti(ArrayList<String> list,
 			AsyncCallback<ArrayList<Utente>> asyncCallback);
+	void sendEmail_TEMPORARY(String from, String to,
+			AsyncCallback<Void> callback);
 }

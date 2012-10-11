@@ -9,7 +9,6 @@ import ovoto.math.unifi.it.client.Ovoto;
 import ovoto.math.unifi.it.shared.Ballot;
 import ovoto.math.unifi.it.shared.Ballot.Status;
 
-import com.google.appengine.api.datastore.Link;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -84,8 +83,14 @@ public class BallotForm extends TabLayoutPanel {
 					if("".equals(serviceUrl.getText())  ) {
 						Window.alert("serviceUrl is mandatory");
 						return;
+					} else {
+						//XXX
+						//XXX
+						//XXX
+						//verifica dell'esistenza del service url
 					}
 
+					
 
 					//Date d = new Date();
 					String desc = ballotUrl.getText();
