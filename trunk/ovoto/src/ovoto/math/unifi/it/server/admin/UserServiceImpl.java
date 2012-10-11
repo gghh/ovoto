@@ -1,7 +1,15 @@
 package ovoto.math.unifi.it.server.admin;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import ovoto.math.unifi.it.client.admin.MailSendingException;
 import ovoto.math.unifi.it.client.admin.UserService;
 import ovoto.math.unifi.it.server.ProfileUtils;
 import ovoto.math.unifi.it.shared.Ballot;
@@ -100,5 +108,30 @@ public class UserServiceImpl extends RemoteServiceServlet implements UserService
 		ProfileUtils.reNotifyCredentialsAdminAuthenticated(url, su);
 	}
 
+	
+	
+	@Override 
+	public void sendEmail_TEMPORARY(String from, String to) throws MailSendingException {
+
+		try {
+		Properties props = new Properties();
+		Session session = Session.getDefaultInstance(props, null);
+		Message msg = new MimeMessage(session);
+		msg.setFrom(new InternetAddress(from, "TEST Sistema di voto elettronico"));
+		msg.addRecipient(Message.RecipientType.TO, new InternetAddress(to,""));
+		msg.setSubject("MAIL DI PROVA");
+		msg.setText("MAIL DI PROVA (body)");
+		Transport.send(msg);
+		
+		System.err.println("Email from " + from + " to " + to + " apparently sent");
+		} catch( Exception e) {
+			throw new MailSendingException(e.getMessage());
+		}
+
+		
+	}
+	
+	
+	
 
 }
