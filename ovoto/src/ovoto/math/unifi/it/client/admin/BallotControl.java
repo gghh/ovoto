@@ -121,7 +121,8 @@ public class BallotControl {
 	private void makeTokensRequest(final Ballot ballot) throws UnsupportedEncodingException {
 
 		JsonpRequestBuilder jsonp = new JsonpRequestBuilder();
-
+		jsonp.setTimeout(100000);
+		
 
 		String url = ballot.getServiceUrl();
 		url += "?mode=ACTIVATE";
