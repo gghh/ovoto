@@ -5,6 +5,10 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
+import com.googlecode.objectify.annotation.Unindexed;
+
+
+@Unindexed
 public class UrnaBallot {
 
 	public enum Status { 

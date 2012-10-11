@@ -4,12 +4,19 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
+import com.googlecode.objectify.annotation.Indexed;
+import com.googlecode.objectify.annotation.Unindexed;
+
+@Unindexed
 class UrnaToken {
 	
 	@Id Long Id;
-	String ballotId;
+	@Indexed String ballotId;
+	
 	String publicBallotId;
-	String token;
+	
+	@Indexed String token;
+	
 	boolean used;
 	String vote;
 	Date validFrom;

@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Unindexed;
 
 
@@ -19,7 +20,8 @@ public class VotingToken implements IsSerializable{
 	private Date validFrom;
 	private Date validUntil;
 	private Long ballotId;
-	private String voterId;
+	
+	@Indexed private String voterId;
 	
 
 	protected VotingToken() {}
