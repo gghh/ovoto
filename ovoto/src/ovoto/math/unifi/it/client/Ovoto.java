@@ -10,6 +10,8 @@ import ovoto.math.unifi.it.client.admin.BulkUserImport;
 import ovoto.math.unifi.it.client.admin.ListaUtenti;
 import ovoto.math.unifi.it.client.admin.ListaVotazioni;
 import ovoto.math.unifi.it.client.admin.LoadProfileRowProvider;
+import ovoto.math.unifi.it.client.admin.UserService;
+import ovoto.math.unifi.it.client.admin.UserServiceAsync;
 import ovoto.math.unifi.it.client.voter.VoterUserProfileControl;
 import ovoto.math.unifi.it.client.voter.VotingService;
 import ovoto.math.unifi.it.client.voter.VotingServiceAsync;
@@ -25,9 +27,12 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -38,6 +43,10 @@ public class Ovoto implements EntryPoint {
 	private final AuthenticationServiceAsync authenticationService =	GWT.create(AuthenticationService.class);
 
 	private final VotingServiceAsync votingService =	GWT.create(VotingService.class);
+
+
+	//TEST
+	private final UserServiceAsync usersService =	GWT.create(UserService.class);
 
 
 	//ignobile ma funzionale !!!
@@ -62,10 +71,10 @@ public class Ovoto implements EntryPoint {
 			if(code == null)
 				code = Window.prompt("Password Required: ","");
 
-			
+
 			final String ballotId = Window.Location.getParameter("ballotId");
-			
-			
+
+
 			votingService.loadVotingData(id, code, new AsyncCallback<VotingData>() {
 
 				@Override
@@ -134,112 +143,155 @@ public class Ovoto implements EntryPoint {
 
 	private void authOk(User user) {
 
-		//TODO
-		// inserire AUTORIZZAZIONE !!!
-		//tipo user.getEmail() == qualcosa
+		if(0 == 1) {
+			///adesso giochiamo con le email.
+
+
+			//una form per spedire email
+			final TextBox from = new TextBox();
+			final TextBox to = new TextBox();
+
+			Button send = new Button("send");
+
+			HorizontalPanel hp = new HorizontalPanel();
+
+
+			hp.add(from);
+			hp.add(to);
+			hp.add(send);
+
+			send.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					usersService.sendEmail_TEMPORARY(from.getText(), to.getText(), new AsyncCallback<Void>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							Window.alert("ERROR: " + caught.getMessage());
+						}
+
+						@Override
+						public void onSuccess(Void result) {
+							Window.alert("OK");
+						}
+					});	
+				}
+			});
+
+
+			ui.setContent(hp);
+
+
+		} else {
+
+			//TODO
+			// inserire AUTORIZZAZIONE !!!
+			//tipo user.getEmail() == qualcosa
 
 
 
-		//entrypoint for administration ...
-		//[will] require googleAccounts auth 
-		//RootPanel.get().add(vp);
+			//entrypoint for administration ...
+			//[will] require googleAccounts auth 
+			//RootPanel.get().add(vp);
 
 
-		final UserProfileControl upc = new AdminUserProfileControl();
-		final BallotControl bc = new BallotControl();
+			final UserProfileControl upc = new AdminUserProfileControl();
+			final BallotControl bc = new BallotControl();
 
 
-		Anchor createUser = new Anchor("Create User");
+			Anchor createUser = new Anchor("Create User");
 
-		createUser.addClickHandler(new ClickHandler() {
+			createUser.addClickHandler(new ClickHandler() {
 
-			@Override
-			public void onClick(ClickEvent event) {
-				UserProfileForm a = new UserProfileForm(upc);
-				ui.setContent(a);
-				//				a.show();
-				//				a.center();
-			}
-		});
+				@Override
+				public void onClick(ClickEvent event) {
+					UserProfileForm a = new UserProfileForm(upc);
+					ui.setContent(a);
+					//				a.show();
+					//				a.center();
+				}
+			});
 
-		ui.addSideControl(createUser);
-
-
-
-		Anchor b_createUser = new Anchor("BULK Create User");
-
-		b_createUser.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				BulkUserImport a = new BulkUserImport(upc);
-				ui.setContent(a);
-			}
-		});
-
-		ui.addSideControl(b_createUser);
+			ui.addSideControl(createUser);
 
 
 
+			Anchor b_createUser = new Anchor("BULK Create User");
 
+			b_createUser.addClickHandler(new ClickHandler() {
 
+				@Override
+				public void onClick(ClickEvent event) {
+					BulkUserImport a = new BulkUserImport(upc);
+					ui.setContent(a);
+				}
+			});
 
-		Anchor listaUtenti = new Anchor("Lista utenti");
-
-		listaUtenti.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				ListaUtenti a = new ListaUtenti(new LoadProfileRowProvider());
-				ui.setContent(a);
-			}
-		});
-		ui.addSideControl(listaUtenti);
-
-
-
-
-		Anchor creaVotazione = new Anchor("Crea Votazione");
-
-		creaVotazione.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				BallotForm a = new BallotForm(bc);
-				ui.setContent(a);
-			}
-		});
-		ui.addSideControl(creaVotazione);
-
-
-
-		Anchor listaVotazioni = new Anchor("Lista Votazioni");
-
-		listaVotazioni.addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				ListaVotazioni a = new ListaVotazioni(bc);
-				ui.setContent(a);
-				//				a.show();
-				//				a.center();
-			}
-		});
-		ui.addSideControl(listaVotazioni);
+			ui.addSideControl(b_createUser);
 
 
 
 
-		Anchor logout = new Anchor("Logout (dev)");
 
-		logout.addClickHandler(new ClickHandler() {
 
-			@Override
-			public void onClick(ClickEvent event) {
-				Window.Location.replace("http://127.0.0.1:8888/_ah/login?continue=http://127.0.0.1:8888/Ovoto.html?gwt.codesvr=127.0.0.1:9997");
-			}
-		});
-		ui.addSideControl(logout);
+			Anchor listaUtenti = new Anchor("Lista utenti");
+
+			listaUtenti.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					ListaUtenti a = new ListaUtenti(new LoadProfileRowProvider());
+					ui.setContent(a);
+				}
+			});
+			ui.addSideControl(listaUtenti);
+
+
+
+
+			Anchor creaVotazione = new Anchor("Crea Votazione");
+
+			creaVotazione.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					BallotForm a = new BallotForm(bc);
+					ui.setContent(a);
+				}
+			});
+			ui.addSideControl(creaVotazione);
+
+
+
+			Anchor listaVotazioni = new Anchor("Lista Votazioni");
+
+			listaVotazioni.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					ListaVotazioni a = new ListaVotazioni(bc);
+					ui.setContent(a);
+					//				a.show();
+					//				a.center();
+				}
+			});
+			ui.addSideControl(listaVotazioni);
+
+
+
+
+			Anchor logout = new Anchor("Logout (dev)");
+
+			logout.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					Window.Location.replace("http://127.0.0.1:8888/_ah/login?continue=http://127.0.0.1:8888/Ovoto.html?gwt.codesvr=127.0.0.1:9997");
+				}
+			});
+			ui.addSideControl(logout);
+		}
 	}
 
 
