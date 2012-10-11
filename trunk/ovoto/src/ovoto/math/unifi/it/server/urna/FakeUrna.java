@@ -130,6 +130,7 @@ public class FakeUrna extends HttpServlet {
 	//GET: mode=ACTIVATE: get accessToken,accessId,numTokens & return Tokens (in number of numTokens, as JsonArray)
 	//GET: mode=VOTE: get token & let user vote
 	//GET: mode=REGISTERVOTE: get token & register vote
+	//GET: mode=STATUS get accessToken & OK 
 
 	@Override
 	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -153,10 +154,9 @@ public class FakeUrna extends HttpServlet {
 			if( !"pippo11".equals(accessToken.trim()))
 				throw new ParametersMismatchException("token mismatch");
 
-
-
-
-			if("SETUP".equals(mode)) {
+			if("STATUS".equals(mode)) {
+				doStatusMethod(req,resp);	
+			} if("SETUP".equals(mode)) {
 				doSetupMethod(req,resp);
 			} else if("ACTIVATE".equals(mode)) {
 				doActivateMethod(req,resp);
@@ -183,7 +183,7 @@ public class FakeUrna extends HttpServlet {
 		String accessId = getStringParamOrFail("accessId",req);
 
 		HashMap<String,Integer> sums = new HashMap<String, Integer>();
-		
+
 		try {
 			UrnaBallot ub = getUrnaBallot(accessId);
 
@@ -193,7 +193,7 @@ public class FakeUrna extends HttpServlet {
 			resp.getWriter().println("<html>");
 			resp.getWriter().println("<body>");
 			resp.getWriter().println("<h2>"+ub.getBallotText()+"</h2>");
-			
+
 			resp.getWriter().println("<ol>");
 			for(UrnaToken ut: votes) {
 				String vote = ut.getVote();
@@ -203,7 +203,7 @@ public class FakeUrna extends HttpServlet {
 					String[] parts = vote.split(";");
 					String cleanVote = parts[1];
 					String[] choices = cleanVote.split("\n");
-					
+
 					for(int i=0;i< choices.length;i++) {
 						Integer e = sums.get(choices[i]);		
 						if(e == null) {
@@ -212,21 +212,21 @@ public class FakeUrna extends HttpServlet {
 							sums.put(choices[i], e+1);
 						}
 					}
-					
+
 				}
-				
+
 			}
 			resp.getWriter().println("</ol>");
-			
+
 			resp.getWriter().println("<ul>");
 
 			for(Map.Entry<String,Integer> e : sums.entrySet()) {
 				resp.getWriter().println("<li>" + e.getKey() + ": " + e.getValue() + "</li>");
 			}
-			
+
 			resp.getWriter().println("</ul>");
-				
-			
+
+
 			resp.getWriter().println("</body>");
 			resp.getWriter().println("</html>");
 		} catch(NotFoundException e) {
@@ -252,6 +252,12 @@ public class FakeUrna extends HttpServlet {
 
 	}
 
+	private void doStatusMethod(HttpServletRequest req, HttpServletResponse resp) throws ParametersMismatchException, IOException {
+		resp.setContentType("text/html");
+		resp.getWriter().print("OK");
+		resp.setStatus(HttpServletResponse.SC_OK);
+	}
+
 	private void doSetupMethod(HttpServletRequest req, HttpServletResponse resp) throws ParametersMismatchException, IOException {
 		String id = getStringParamOrFail("id",req);
 		long numOfChoices = getLongParamOrFail("numOfChoices", req);
@@ -259,7 +265,7 @@ public class FakeUrna extends HttpServlet {
 		Date endDate = getDateParamOrFail("endDate", req);
 
 		String ballotText = getStringParamOrFail("ballotText",req);
-		
+
 		ArrayList<String> labels = getListOfStringParamOrFail("label", req);
 
 		//crea il ballot, gli assegna un id, salba il ballot, ritorna l'id
@@ -268,7 +274,7 @@ public class FakeUrna extends HttpServlet {
 		UrnaBallot ub = new UrnaBallot(bid,id,numOfChoices,labels,startDate,endDate,ballotText);
 
 		store(ub);
-		
+
 		resp.setContentType("text/html");
 		resp.getWriter().print(bid);
 		resp.setStatus(HttpServletResponse.SC_OK);
@@ -478,7 +484,7 @@ public class FakeUrna extends HttpServlet {
 		UrnaBallot ub = getUrnaBallot(token.getBallotId());
 
 		p.println("<html>");
-		
+
 
 		p.println("<script type=\"text/javascript\">");
 		p.println("function get_check_value()");
@@ -495,13 +501,13 @@ public class FakeUrna extends HttpServlet {
 		p.println("}");
 		p.println("</script>");
 
-		
+
 		p.println("<body>");
 
-		
-		
+
+
 		p.println("<h3>"+ ub.getBallotText()+"</h3>");
-		
+
 		p.println("<form name=\"vote\" method=\"POST\" action=\""+ me +"\">");
 
 		int i=0;
