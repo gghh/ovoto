@@ -21,4 +21,13 @@
 
   
   <threadsafe>true</threadsafe>
+
+
+  
+  <!-- accept emails -->
+  <inbound-services>
+  	<service>mail</service>
+  </inbound-services>
+
+
 </appengine-web-app>
