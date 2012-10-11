@@ -11,7 +11,10 @@ import ovoto.math.unifi.it.server.ProfileUtils;
 import ovoto.math.unifi.it.shared.Utente;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Unindexed;
 
+
+@Unindexed
 public class EmailsSequence {
 	@Id Long sequenceId;
 	ArrayList<String> toBeDone;
