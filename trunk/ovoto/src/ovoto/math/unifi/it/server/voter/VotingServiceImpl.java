@@ -25,7 +25,7 @@ public class VotingServiceImpl extends RemoteServiceServlet implements VotingSer
 
 
 
-	public void init() {
+	public void init() {		
 		ObjectifyService.register(Utente.class);
 		ObjectifyService.register(VotingToken.class);
 		ObjectifyService.register(Ballot.class);
