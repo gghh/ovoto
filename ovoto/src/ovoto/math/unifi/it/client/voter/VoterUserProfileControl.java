@@ -1,5 +1,7 @@
 package ovoto.math.unifi.it.client.voter;
 
+import java.util.List;
+
 import ovoto.math.unifi.it.client.Ovoto;
 import ovoto.math.unifi.it.client.UserProfileControl;
 import ovoto.math.unifi.it.client.UserProfileForm;
@@ -86,6 +88,12 @@ public class VoterUserProfileControl implements UserProfileControl {
 
 	}
 
+	
+	@Override
+	public void store(final List<Utente> utenti) {
+		Window.alert("Method not to be called at line 96 of VoterUserProfileCOntrol");
+	}
+	
 	
 	private void loadSavedProfile(String id) {
 		votingService.loadVotingData(id,code, new AsyncCallback<VotingData>() {
