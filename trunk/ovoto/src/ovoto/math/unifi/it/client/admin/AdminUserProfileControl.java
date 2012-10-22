@@ -1,8 +1,11 @@
 package ovoto.math.unifi.it.client.admin;
 
+import java.util.List;
+
 import ovoto.math.unifi.it.client.Ovoto;
 import ovoto.math.unifi.it.client.UserProfileControl;
 import ovoto.math.unifi.it.client.UserProfileForm;
+import ovoto.math.unifi.it.client.voter.TimedIteratingAsyncCommand;
 import ovoto.math.unifi.it.shared.Utente;
 import ovoto.math.unifi.it.shared.VotingData;
 
@@ -59,30 +62,6 @@ public class AdminUserProfileControl implements UserProfileControl {
 	
 	
 
-	@Override
-	public void store(Utente utente) {
-
-		Ovoto.getUi().setMessage("Saving entry....",true);
-
-
-		userService.writeUser(utente, new AsyncCallback<String>() {
-
-			@Override
-			public void onSuccess(String result) {
-				//msg.setText("progress...");
-				Ovoto.getUi().setMessage("Saving DONE (id:"+result+")");
-
-				loadSavedProfile(result);
-			}
-
-			@Override
-			public void onFailure(Throwable caught) {
-				Ovoto.getUi().setErrorMessage("ahi ahi ahi " + caught.getMessage());
-			}
-		});
-
-	}
-
 	
 	private void loadSavedProfile(String id) {
 		Key<Utente> key = new Key<Utente>(Utente.class, id);
@@ -110,6 +89,66 @@ public class AdminUserProfileControl implements UserProfileControl {
 		Key<Utente> k = new Key<Utente>(Utente.class, id);
 		userService.getUtente(k, c);	
 	}
+
+
+
+	@Override
+	public void store(List<Utente> utenti) {
+		TimedIteratingAsyncCommand<Utente, String> tiac = new TimedIteratingAsyncCommand<Utente, String>() {
+
+			@Override
+			public void execute(Utente u, AsyncCallback<String> callback) {
+				userService.writeUser(u,callback);
+			}
+
+			@Override
+			public void onComplete() {
+				//nothing to do I suppose
+				Window.alert("DONE !!!");
+			}
+		};
+		
+		tiac.run(utenti, new AsyncCallback<String>() {
+
+			@Override
+			public void onSuccess(String result) {
+				//msg.setText("progress...");
+				Ovoto.getUi().setMessage("Saving DONE (id:"+result+")");
+				//loadSavedProfile(result);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Ovoto.getUi().setErrorMessage("ahi ahi ahi " + caught.getMessage());
+			}
+		}, 100);
+	}
 	
+	
+	@Override
+	public void store(Utente utente) {
+
+		Ovoto.getUi().setMessage("Saving entry....",true);
+
+
+		userService.writeUser(utente, new AsyncCallback<String>() {
+
+			@Override
+			public void onSuccess(String result) {
+				//msg.setText("progress...");
+				Ovoto.getUi().setMessage("Saving DONE (id:"+result+")");
+
+				loadSavedProfile(result);
+			}
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Ovoto.getUi().setErrorMessage("ahi ahi ahi " + caught.getMessage());
+			}
+		});
+
+	}
+
+
 
 }

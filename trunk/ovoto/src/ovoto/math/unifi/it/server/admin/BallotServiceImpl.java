@@ -100,11 +100,7 @@ public class BallotServiceImpl extends RemoteServiceServlet implements BallotSer
 	//setup the service on the remote end
 	//and store the serviceAccessId to be used in future communicatiosn with the service
 	public Ballot setupService(Ballot b)  throws BallotServiceCommunicationErrorException {
-
-
 		b = BallotUtils.setupBallot(b);
-
-
 		return b;
 
 	}

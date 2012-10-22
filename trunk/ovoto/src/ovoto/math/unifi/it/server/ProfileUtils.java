@@ -222,7 +222,7 @@ public class ProfileUtils {
 		Properties props = new Properties();
 		Session session = Session.getDefaultInstance(props, null);
 		Message msg = new MimeMessage(session);
-		msg.setFrom(new InternetAddress("ovoto.anagrafe@gmail.com", "Sistema di voto elettronico"));
+		msg.setFrom(new InternetAddress("elezioni.simai@gmail.com", "Elezioni SIMAI"));
 		msg.addRecipient(Message.RecipientType.TO, new InternetAddress(u.getEmail(), getQualifiedName(u)));
 		msg.setSubject(subj);
 		msg.setText(mailbody);

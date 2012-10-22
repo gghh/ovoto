@@ -1,5 +1,8 @@
 package ovoto.math.unifi.it.server.urna;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -14,6 +17,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.antlr.stringtemplate.StringTemplate;
 
 import ovoto.math.unifi.it.server.urna.UrnaBallot.Status;
 
@@ -471,9 +476,53 @@ public class FakeUrna extends HttpServlet {
 
 
 
+	
+    /** @param filePath the name of the file to open. Not sure if it can accept URLs or just filenames. Path handling could be better, and buffer sizes are hardcoded
+	    */ 
+	    private static String readFileAsString(String filePath) throws java.io.IOException{
+	        StringBuffer fileData = new StringBuffer(1000);
+	        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+	        char[] buf = new char[1024];
+	        int numRead=0;
+	        while((numRead=reader.read(buf)) != -1){
+	            String readData = String.valueOf(buf, 0, numRead);
+	            fileData.append(readData);
+	            buf = new char[1024];
+	        }
+	        reader.close();
+	        return fileData.toString();
+	    }
 
 
 
+	    
+	    public class MyLabel {
+	    	private String id;
+	    	private String key;
+	    	private String value;
+	    	
+	    	public MyLabel(String id, String key, String value) {
+	    		this.id = id;
+	    		this.key = key;
+	    		this.value = value;
+	    	}
+	    	
+	    	
+	    	public String getId() {
+	    		return id;
+	    	}
+	    	
+	    	public String getKey() {
+	    		return key;
+	    	}
+
+	    	public String getValue() {
+	    		return value;
+	    	}
+	    	
+	    }
+
+	private static final String schedaElettoraleTemplate = "SchedaElettorale_basic.st";
 	private void generateForm(UrnaToken token, HttpServletResponse resp, HttpServletRequest req) throws IOException {
 
 
@@ -483,53 +532,85 @@ public class FakeUrna extends HttpServlet {
 
 		UrnaBallot ub = getUrnaBallot(token.getBallotId());
 
-		p.println("<html>");
+		
+		String s = readFileAsString(schedaElettoraleTemplate);
+		StringTemplate st = new StringTemplate(s);
+		
+		st.setAttribute("num_labels", ub.getLabels().size() );
+		st.setAttribute("num_choices", ub.getNumOfChoices() );
+		st.setAttribute("title", ub.getBallotText() );
+		st.setAttribute("action", me);
 
+		st.setAttribute("ballot_public_id", ub.getPublicId());
+		st.setAttribute("token_text", token.getTokenText());
 
-		p.println("<script type=\"text/javascript\">");
-		p.println("function get_check_value()");
-		p.println("{");
-		p.println("var c_value = \"\"; var count =0;");
-		p.println("for (var i=0; i < "+ub.getLabels().size()+"; i++)");
-		p.println("   { var e = document.vote['v'+i]");
-		p.println("   if (e.checked)");
-		p.println("      {count++; if(count >"+ub.getNumOfChoices()+") { alert('Invalid selection: \\nyou cannot select mote than "+ub.getNumOfChoices()+" items.'); return false;}");
-		p.println("      c_value = c_value + e.value + \"\\n\";");
-		p.println("      }");
-		p.println("   }");
-		p.println(" return confirm('Please confirm your choices:\\n' +c_value);");
-		p.println("}");
-		p.println("</script>");
-
-
-		p.println("<body>");
-
-
-
-		p.println("<h3>"+ ub.getBallotText()+"</h3>");
-
-		p.println("<form name=\"vote\" method=\"POST\" action=\""+ me +"\">");
-
+		
+		ArrayList<MyLabel> labels = new ArrayList<FakeUrna.MyLabel>();
+		
 		int i=0;
-		p.println("<ol>");
 		for(String l : ub.getLabels()) {
-			p.println("<li><input type=\"checkbox\" name=\"v"+i+"\" value=\""+l+"\"/>"+l+"</li>");
+			String id = "v" + i;
+			String key = l;
+			String value = l;
+			labels.add(new MyLabel(id, key, value));
 			i++;
 		}
-		p.println("</ol>");
 
-		p.println("<input type=\"submit\"  onClick='return get_check_value();' name=\"submit\" value=\"submit\"/>");
+		st.setAttribute("labels", labels);
+	
+		//String mailbody = st.toString();
+		
+		
+//		p.println("<html>");
+//
+//
+//		p.println("<script type=\"text/javascript\">");
+//		p.println("function get_check_value()");
+//		p.println("{");
+//		p.println("var c_value = \"\"; var count =0;");
+//		p.println("for (var i=0; i < "+ub.getLabels().size()+"; i++)");
+//		p.println("   { var e = document.vote['v'+i]");
+//		p.println("   if (e.checked)");
+//		p.println("      {count++; if(count >"+ub.getNumOfChoices()+") { alert('Invalid selection: \\nyou cannot select mote than "+ub.getNumOfChoices()+" items.'); return false;}");
+//		p.println("      c_value = c_value + e.value + \"\\n\";");
+//		p.println("      }");
+//		p.println("   }");
+//		p.println(" return confirm('Please confirm your choices:\\n' +c_value);");
+//		p.println("}");
+//		p.println("</script>");
+//
+//
+//		p.println("<body>");
+//
+//
+//
+//		p.println("<h3>"+ ub.getBallotText()+"</h3>");
+//
+//		p.println("<form name=\"vote\" method=\"POST\" action=\""+ me +"\">");
+//
+//		int i=0;
+//		p.println("<ol>");
+//		for(String l : ub.getLabels()) {
+//			p.println("<li><input type=\"checkbox\" name=\"v"+i+"\" value=\""+l+"\"/>"+l+"</li>");
+//			i++;
+//		}
+//		p.println("</ol>");
+//
+//		p.println("<input type=\"submit\"  onClick='return get_check_value();' name=\"submit\" value=\"submit\"/>");
+//
+//		//p.println("<input type=\"button\" onClick='javascript:get_check_value();'/>");
+//
+//		p.println("<input type=\"hidden\" name=\"ballotId\" value=\""+ub.getPublicId()+"\"/></br>");
+//		p.println("<input type=\"hidden\" name=\"token\" value=\""+token.getTokenText()+"\"/></br>");
+//		p.println("<input type=\"hidden\" name=\"mode\" value=\"REGISTERVOTE\"/></br>");
+//
+//		p.println("</form>");
+//		p.println("</body>");
+//		p.println("</html>");
 
-		//p.println("<input type=\"button\" onClick='javascript:get_check_value();'/>");
-
-		p.println("<input type=\"hidden\" name=\"ballotId\" value=\""+ub.getPublicId()+"\"/></br>");
-		p.println("<input type=\"hidden\" name=\"token\" value=\""+token.getTokenText()+"\"/></br>");
-		p.println("<input type=\"hidden\" name=\"mode\" value=\"REGISTERVOTE\"/></br>");
-
-		p.println("</form>");
-		p.println("</body>");
-		p.println("</html>");
-
+		
+		p.print(st.toString());
+		
 
 	}
 
