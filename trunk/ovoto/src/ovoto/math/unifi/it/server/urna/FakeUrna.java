@@ -1,7 +1,6 @@
 package ovoto.math.unifi.it.server.urna;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -431,6 +430,8 @@ public class FakeUrna extends HttpServlet {
 
 
 
+	private static final String confermaVotoTemplate = "ConfermaVoto_basic.st";
+
 	private void doRegisterVoteMethod(HttpServletRequest req, HttpServletResponse resp) throws IOException, ParametersMismatchException {
 
 
@@ -464,10 +465,18 @@ public class FakeUrna extends HttpServlet {
 		token.setUsed();
 		store(token);	
 
-		resp.getWriter().println("Voto registrato correttmanete.");
+		
+		String s = readFileAsString(confermaVotoTemplate);
+		StringTemplate st = new StringTemplate(s);
+		st.setAttribute("voto", textVote );
+
+		
+		//resp.getWriter().println("Voto registrato correttmanete.");
 		//resp.getWriter().println("<pre>");
-		resp.getWriter().println(textVote);
+		//resp.getWriter().println(textVote);
 		//resp.getWriter().println("</pre>");
+		
+		resp.getWriter().println(st.toString());
 		return;
 
 	}
