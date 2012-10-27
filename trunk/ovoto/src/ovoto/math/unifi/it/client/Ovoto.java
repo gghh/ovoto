@@ -141,6 +141,7 @@ public class Ovoto implements EntryPoint {
 
 
 
+	@SuppressWarnings("unused")
 	private void authOk(User user) {
 
 		if(0 == 1) {
