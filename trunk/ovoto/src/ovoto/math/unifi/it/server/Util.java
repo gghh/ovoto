@@ -1,6 +1,4 @@
 package ovoto.math.unifi.it.server;
-import java.util.HashMap;
-import java.util.Map;
 
 /* Copyright (c) 2008 Google Inc.
  *
@@ -34,7 +32,7 @@ public class Util{
       for (int i = 0; i < s.length(); i++) {
         char c = s.charAt(i);
         switch (c) {
-          case '\'': sb.append("&quot;"); break;
+          case '\'': sb.append("&apos;"); break;
           case '&': sb.append("&amp;"); break;
           case '<': sb.append("&lt;"); break;
           case '\n': sb.append("&#xA;"); break;
