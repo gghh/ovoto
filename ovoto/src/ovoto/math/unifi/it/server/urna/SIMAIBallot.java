@@ -27,12 +27,21 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
 
-public class FakeUrna extends HttpServlet {
+public class SIMAIBallot extends HttpServlet {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+
+
+
+
+	private static final String confermaVotoRegistratoTemplate = "ConfermaVotoRegistrato_SIMAIBallot.st";
+	private static final String schedaElettoraleTemplate = "SchedaElettorale_SIMAIBallot.st";
+
+
+
 
 
 
@@ -63,6 +72,15 @@ public class FakeUrna extends HttpServlet {
 			throw new ParametersMismatchException("manca parametro");
 		return val;
 	}
+
+
+	public String getStringParamOrDefault(String param, String defl,HttpServletRequest req) throws ParametersMismatchException {
+		String val = req.getParameter(param);
+		if(val == null)
+			return defl;
+		return val;
+	}
+
 
 	public long getLongParamOrFail(String param, HttpServletRequest req) throws ParametersMismatchException {
 		String t = getStringParamOrFail(param, req);
@@ -105,6 +123,7 @@ public class FakeUrna extends HttpServlet {
 
 
 	//returns param names
+	@SuppressWarnings("unused")
 	private ArrayList<Integer> getListOfCheckedParamUntil(String tag,	HttpServletRequest req, int size) {
 		ArrayList<Integer> ls = new ArrayList<Integer>();
 
@@ -204,20 +223,20 @@ public class FakeUrna extends HttpServlet {
 				resp.getWriter().println("<li>" + vote+ "</li>");
 				if(vote != null && !ut.isFree() && !"".equals(vote)) {
 					System.err.println(vote);
-					String[] parts = vote.split(";");
-					String cleanVote = parts[1];
-					String[] choices = cleanVote.split("\n");
+			
+//					String[] parts = vote.split(";");
+//					String cleanVote = parts[1];
+//					String[] choices = cleanVote.split("\n");
 
-					for(int i=0;i< choices.length;i++) {
-						Integer e = sums.get(choices[i]);		
+//					for(int i=0;i< choices.length;i++) {
+						Integer e = sums.get(vote);		
 						if(e == null) {
-							sums.put(choices[i], 1);
+							sums.put(vote, 1);
 						} else {
-							sums.put(choices[i], e+1);
+							sums.put(vote, e+1);
 						}
 					}
-
-				}
+//				}
 
 			}
 			resp.getWriter().println("</ol>");
@@ -430,8 +449,6 @@ public class FakeUrna extends HttpServlet {
 
 
 
-	private static final String confermaVotoTemplate = "ConfermaVoto_basic.st";
-
 	private void doRegisterVoteMethod(HttpServletRequest req, HttpServletResponse resp) throws IOException, ParametersMismatchException {
 
 
@@ -442,40 +459,36 @@ public class FakeUrna extends HttpServlet {
 
 		String vote = "";
 
-		ArrayList<Integer> choices = getListOfCheckedParamUntil("v", req, ub.getLabels().size());
 
-		//		System.err.println(choices.size());
-		//		System.err.println(req.getParameter("v0"));
-		//		System.err.println(req.getParameter("v1"));
-		//		System.err.println(req.getParameter("v2"));
+		//		ArrayList<Integer> choices = getListOfCheckedParamUntil("v", req, ub.getLabels().size());
+		//		if(choices.size() > ub.getNumOfChoices()) {
+		//			throw new ParametersMismatchException("No more than " + ub.getNumOfChoices() + " choices are allowed.");
+		//		}
+		//
+		//		String textVote = "";
+		//		for(int v: choices) {
+		//			vote+= ":" + v +":";
+		//			textVote += ub.getLabels().get(v) + "\n";		
+		//		}
 
-		if(choices.size() > ub.getNumOfChoices()) {
-			throw new ParametersMismatchException("No more than " + ub.getNumOfChoices() + " choices are allowed.");
-		}
-
-		String textVote = "";
-		for(int v: choices) {
-			vote+= ":" + v +":";
-			textVote += ub.getLabels().get(v) + "\n";		
-		}
-
-
-
-		token.setVote(vote + ";" + textVote);
+		vote = getStringParamOrDefault("choices","SCHEDA BIANCA",req);
+		token.setVote(vote);
 		token.setUsed();
 		store(token);	
 
-		
-		String s = readFileAsString(confermaVotoTemplate);
-		StringTemplate st = new StringTemplate(s);
-		st.setAttribute("voto", textVote );
 
-		
+		String s = readFileAsString(confermaVotoRegistratoTemplate);
+		StringTemplate st = new StringTemplate(s);
+		st.setAttribute("voto", vote );
+		st.setAttribute("title", ub.getBallotText() );
+
+
+
 		//resp.getWriter().println("Voto registrato correttmanete.");
 		//resp.getWriter().println("<pre>");
 		//resp.getWriter().println(textVote);
 		//resp.getWriter().println("</pre>");
-		
+
 		resp.getWriter().println(st.toString());
 		return;
 
@@ -485,53 +498,52 @@ public class FakeUrna extends HttpServlet {
 
 
 
-	
-    /** @param filePath the name of the file to open. Not sure if it can accept URLs or just filenames. Path handling could be better, and buffer sizes are hardcoded
-	    */ 
-	    private static String readFileAsString(String filePath) throws java.io.IOException{
-	        StringBuffer fileData = new StringBuffer(1000);
-	        BufferedReader reader = new BufferedReader(new FileReader(filePath));
-	        char[] buf = new char[1024];
-	        int numRead=0;
-	        while((numRead=reader.read(buf)) != -1){
-	            String readData = String.valueOf(buf, 0, numRead);
-	            fileData.append(readData);
-	            buf = new char[1024];
-	        }
-	        reader.close();
-	        return fileData.toString();
-	    }
+
+	/** @param filePath the name of the file to open. Not sure if it can accept URLs or just filenames. Path handling could be better, and buffer sizes are hardcoded
+	 */ 
+	private static String readFileAsString(String filePath) throws java.io.IOException{
+		StringBuffer fileData = new StringBuffer(1000);
+		BufferedReader reader = new BufferedReader(new FileReader(filePath));
+		char[] buf = new char[1024];
+		int numRead=0;
+		while((numRead=reader.read(buf)) != -1){
+			String readData = String.valueOf(buf, 0, numRead);
+			fileData.append(readData);
+			buf = new char[1024];
+		}
+		reader.close();
+		return fileData.toString();
+	}
 
 
 
-	    
-	    public class MyLabel {
-	    	private String id;
-	    	private String key;
-	    	private String value;
-	    	
-	    	public MyLabel(String id, String key, String value) {
-	    		this.id = id;
-	    		this.key = key;
-	    		this.value = value;
-	    	}
-	    	
-	    	
-	    	public String getId() {
-	    		return id;
-	    	}
-	    	
-	    	public String getKey() {
-	    		return key;
-	    	}
 
-	    	public String getValue() {
-	    		return value;
-	    	}
-	    	
-	    }
+	public class MyLabel {
+		private String id;
+		private String key;
+		private String value;
 
-	private static final String schedaElettoraleTemplate = "SchedaElettorale_basic.st";
+		public MyLabel(String id, String key, String value) {
+			this.id = id;
+			this.key = key;
+			this.value = value;
+		}
+
+
+		public String getId() {
+			return id;
+		}
+
+		public String getKey() {
+			return key;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+	}
+
 	private void generateForm(UrnaToken token, HttpServletResponse resp, HttpServletRequest req) throws IOException {
 
 
@@ -541,10 +553,10 @@ public class FakeUrna extends HttpServlet {
 
 		UrnaBallot ub = getUrnaBallot(token.getBallotId());
 
-		
+
 		String s = readFileAsString(schedaElettoraleTemplate);
 		StringTemplate st = new StringTemplate(s);
-		
+
 		st.setAttribute("num_labels", ub.getLabels().size() );
 		st.setAttribute("num_choices", ub.getNumOfChoices() );
 		st.setAttribute("title", ub.getBallotText() );
@@ -553,9 +565,9 @@ public class FakeUrna extends HttpServlet {
 		st.setAttribute("ballot_public_id", ub.getPublicId());
 		st.setAttribute("token_text", token.getTokenText());
 
-		
-		ArrayList<MyLabel> labels = new ArrayList<FakeUrna.MyLabel>();
-		
+
+		ArrayList<MyLabel> labels = new ArrayList<SIMAIBallot.MyLabel>();
+
 		int i=0;
 		for(String l : ub.getLabels()) {
 			String id = "v" + i;
@@ -566,60 +578,60 @@ public class FakeUrna extends HttpServlet {
 		}
 
 		st.setAttribute("labels", labels);
-	
-		//String mailbody = st.toString();
-		
-		
-//		p.println("<html>");
-//
-//
-//		p.println("<script type=\"text/javascript\">");
-//		p.println("function get_check_value()");
-//		p.println("{");
-//		p.println("var c_value = \"\"; var count =0;");
-//		p.println("for (var i=0; i < "+ub.getLabels().size()+"; i++)");
-//		p.println("   { var e = document.vote['v'+i]");
-//		p.println("   if (e.checked)");
-//		p.println("      {count++; if(count >"+ub.getNumOfChoices()+") { alert('Invalid selection: \\nyou cannot select mote than "+ub.getNumOfChoices()+" items.'); return false;}");
-//		p.println("      c_value = c_value + e.value + \"\\n\";");
-//		p.println("      }");
-//		p.println("   }");
-//		p.println(" return confirm('Please confirm your choices:\\n' +c_value);");
-//		p.println("}");
-//		p.println("</script>");
-//
-//
-//		p.println("<body>");
-//
-//
-//
-//		p.println("<h3>"+ ub.getBallotText()+"</h3>");
-//
-//		p.println("<form name=\"vote\" method=\"POST\" action=\""+ me +"\">");
-//
-//		int i=0;
-//		p.println("<ol>");
-//		for(String l : ub.getLabels()) {
-//			p.println("<li><input type=\"checkbox\" name=\"v"+i+"\" value=\""+l+"\"/>"+l+"</li>");
-//			i++;
-//		}
-//		p.println("</ol>");
-//
-//		p.println("<input type=\"submit\"  onClick='return get_check_value();' name=\"submit\" value=\"submit\"/>");
-//
-//		//p.println("<input type=\"button\" onClick='javascript:get_check_value();'/>");
-//
-//		p.println("<input type=\"hidden\" name=\"ballotId\" value=\""+ub.getPublicId()+"\"/></br>");
-//		p.println("<input type=\"hidden\" name=\"token\" value=\""+token.getTokenText()+"\"/></br>");
-//		p.println("<input type=\"hidden\" name=\"mode\" value=\"REGISTERVOTE\"/></br>");
-//
-//		p.println("</form>");
-//		p.println("</body>");
-//		p.println("</html>");
 
-		
+		//String mailbody = st.toString();
+
+
+		//		p.println("<html>");
+		//
+		//
+		//		p.println("<script type=\"text/javascript\">");
+		//		p.println("function get_check_value()");
+		//		p.println("{");
+		//		p.println("var c_value = \"\"; var count =0;");
+		//		p.println("for (var i=0; i < "+ub.getLabels().size()+"; i++)");
+		//		p.println("   { var e = document.vote['v'+i]");
+		//		p.println("   if (e.checked)");
+		//		p.println("      {count++; if(count >"+ub.getNumOfChoices()+") { alert('Invalid selection: \\nyou cannot select mote than "+ub.getNumOfChoices()+" items.'); return false;}");
+		//		p.println("      c_value = c_value + e.value + \"\\n\";");
+		//		p.println("      }");
+		//		p.println("   }");
+		//		p.println(" return confirm('Please confirm your choices:\\n' +c_value);");
+		//		p.println("}");
+		//		p.println("</script>");
+		//
+		//
+		//		p.println("<body>");
+		//
+		//
+		//
+		//		p.println("<h3>"+ ub.getBallotText()+"</h3>");
+		//
+		//		p.println("<form name=\"vote\" method=\"POST\" action=\""+ me +"\">");
+		//
+		//		int i=0;
+		//		p.println("<ol>");
+		//		for(String l : ub.getLabels()) {
+		//			p.println("<li><input type=\"checkbox\" name=\"v"+i+"\" value=\""+l+"\"/>"+l+"</li>");
+		//			i++;
+		//		}
+		//		p.println("</ol>");
+		//
+		//		p.println("<input type=\"submit\"  onClick='return get_check_value();' name=\"submit\" value=\"submit\"/>");
+		//
+		//		//p.println("<input type=\"button\" onClick='javascript:get_check_value();'/>");
+		//
+		//		p.println("<input type=\"hidden\" name=\"ballotId\" value=\""+ub.getPublicId()+"\"/></br>");
+		//		p.println("<input type=\"hidden\" name=\"token\" value=\""+token.getTokenText()+"\"/></br>");
+		//		p.println("<input type=\"hidden\" name=\"mode\" value=\"REGISTERVOTE\"/></br>");
+		//
+		//		p.println("</form>");
+		//		p.println("</body>");
+		//		p.println("</html>");
+
+
 		p.print(st.toString());
-		
+
 
 	}
 

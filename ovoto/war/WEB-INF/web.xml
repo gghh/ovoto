@@ -16,7 +16,16 @@
 		<url-pattern>/ovoto/fakeUrna/*</url-pattern>
 	</servlet-mapping>
 
-
+	<!--  Fake Urna  -->
+	<servlet>
+		<servlet-name>SIMAIBalloturnaServlet</servlet-name>
+		<servlet-class>ovoto.math.unifi.it.server.urna.SIMAIBallot</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SIMAIBalloturnaServlet</servlet-name>
+		<url-pattern>/ovoto/SIMAIBallot/*</url-pattern>
+	</servlet-mapping>
+	
 
 
 
